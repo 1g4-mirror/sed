@@ -664,9 +664,9 @@ closedown (struct input *input)
       if (fchown (output_fd, input->st.st_uid, input->st.st_gid) == -1)
         ignore_value (fchown (output_fd, -1, input->st.st_gid));
 #endif
-      copy_acl (input->in_file_name, input_fd,
-                input->out_file_name, output_fd,
-                input->st.st_mode);
+      xcopy_acl (input->in_file_name, input_fd,
+                 input->out_file_name, output_fd,
+                 input->st.st_mode);
 
       ck_fclose (input->fp);
       ck_fclose (output_file.fp);
