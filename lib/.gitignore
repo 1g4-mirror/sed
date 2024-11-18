@@ -244,3 +244,4 @@
 /xalloc-oversized.h
 /xalloc.h
 /xmalloc.c
+/stdlib.c
