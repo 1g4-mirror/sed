@@ -633,10 +633,16 @@ sed -e '/^foo/d' -f script2.sed input.txt > output.txt
 
 @cindex @command{a}, and semicolons
 @cindex @command{c}, and semicolons
+@cindex @command{e}, and semicolons
 @cindex @command{i}, and semicolons
-Commands @command{a}, @command{c}, @command{i}, due to their syntax,
-cannot be followed by semicolons working as command separators and
-thus should be terminated
+@cindex @command{r}, and semicolons
+@cindex @command{R}, and semicolons
+@cindex @command{w}, and semicolons
+@cindex @command{W}, and semicolons
+Commands @command{a}, @command{c}, @command{e}, @command{i},
+@command{r}, @command{R}, @command{w}, @command{W}, due to their
+syntax, cannot be followed by semicolons working as command separators
+and thus should be terminated
 with newlines or be placed at the end of a @var{script} or @var{script-file}.
 Commands can also be preceded with optional non-significant
 whitespace characters.
