@@ -305,6 +305,9 @@ sc_prohibit_operator_at_end_of_line:
 	halt='found operator at end of line'				\
 	  $(_sc_search_regexp)
 
+# Write base64-encoded (not hex) checksums into the announcement.
+announce_gen_args = --cksum-checksums
+
 # Add an exemption for sc_makefile_at_at_check.
 _makefile_at_at_check_exceptions = ' && !/MAKEINFO/'
 
