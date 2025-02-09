@@ -240,6 +240,7 @@ main (int argc, char **argv)
 
   /* Tell program which translations to use and where to find.  */
   bindtextdomain (PACKAGE, LOCALEDIR);
+  bindtextdomain ("gnulib", GNULIB_LOCALEDIR);
   textdomain (PACKAGE);
 #endif
 
