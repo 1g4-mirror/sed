@@ -2469,14 +2469,17 @@ $ seq 10 | sed -n '6,~4p'
 @node Zero Address
 @section Zero Address
 @cindex Zero Address
-As a @value{SSED} extension, @code{0} address can be used in two cases:
+As a @value{SSED} extension, @code{0} address can be used in these cases:
 @enumerate
 @item
-In a regex range addresses as @code{0,/@var{regexp}/}
+In a regex range address as @code{0,/@var{regexp}/}
 (@pxref{Zero Address Regex Range}).
 @item
 With the @code{r} command, inserting a file before the first line
 (@pxref{Adding a header to multiple files}).
+@item
+As the starting address in the @var{first}~@var{step} extension
+(@pxref{Numeric Addresses}).
 @end enumerate
 
 Note that these are the only places where the @code{0} address makes
