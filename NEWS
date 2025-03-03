@@ -18,6 +18,11 @@ GNU sed NEWS                                    -*- outline -*-
   apostrophes) instead of `like this' (with a grave accent and an
   apostrophe).  This tracks the GNU coding standards.
 
+** Build-related
+
+  builds no longer fail on platforms without the <getoph.h> header or
+  getopt_long function.
+  [bug introduced in sed 4.9]
 
 * Noteworthy changes in release 4.9 (2022-11-06) [stable]
 
