@@ -3353,7 +3353,7 @@ the existing ``word boundary'' meaning.
 
 @value{SSED} processes escape sequences @emph{before} passing
 the text onto the regular-expression matching of the @command{s///} command
-and Address matching. Thus the following two commands are equivalent
+and address matching. Thus the following two commands are equivalent
 (@samp{0x5e} is the hexadecimal @sc{ascii} value of the character @samp{^}):
 
 @codequoteundirected on
@@ -4116,8 +4116,8 @@ all lines except the last, @code{N} appends the line to the pattern
 space.  A substitution command then removes soft line breaks
 (@samp{=} at the end of a line, i.e. followed by a newline) by replacing
 them with an empty string.
-@emph{if} the substitution was successful (meaning the pattern space contained
-a line which should be joined), The conditional branch command @code{t} jumps
+@emph{If} the substitution was successful (meaning the pattern space contained
+a line which should be joined), the conditional branch command @code{t} jumps
 to the beginning of the program without completing or restarting the cycle.
 If the substitution failed (meaning there were no soft line breaks),
 The @code{t} command will @emph{not} branch. Then, @code{P} will
