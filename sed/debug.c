@@ -424,7 +424,7 @@ debug_print_command (const struct vector *program, const struct sed_cmd *sc)
   debug_print_addr (sc->a2);
 
   addr_bang = sc->addr_bang;
-  /* Implmentation detail: GNU Sed implements beginning of block
+  /* Implementation detail: GNU Sed implements beginning of block
      by negating the matched address and jumping if there's no match.  */
   if (sc->cmd == '{')
     addr_bang = !addr_bang;

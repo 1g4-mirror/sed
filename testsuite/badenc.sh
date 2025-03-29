@@ -27,7 +27,7 @@ printf "abc\nde\320f\nghi\njkl\nmno\npqr\nstu\nvwx\nyz\n" > badenc-inp \
     || framework_failure_
 
 
-# The progarm: using 'z' to clear the pattern-space even
+# The program: using 'z' to clear the pattern-space even
 # if it contains invalid multibyte sequences.
 # Using 's/.*//' would not be able to clear the pattern-space.
 cat << \EOF > badenc.sed || framework_failure_

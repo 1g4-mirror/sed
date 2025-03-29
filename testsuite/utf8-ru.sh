@@ -58,11 +58,11 @@ cp utf8-1-exp utf8-2-exp || framework_failure_
 
 
 # Test 3: Capitalize only the next character (\u)
-# Only the first "DE" should be capitilized.
+# Only the first "DE" should be capitalized.
 #       s/д.*/\u&/g
 printf 's/\320\264.*/\\u&/g' > utf8-3.sed || framework_failure_
 
-# Test 3: Expected output - First DE capitilized, second DE not.
+# Test 3: Expected output - First DE capitalized, second DE not.
 #       Д       а        д
 printf '\320\224\320\260 \320\264\n' > utf8-3-exp || framework_failure_
 

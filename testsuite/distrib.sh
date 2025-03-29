@@ -103,7 +103,7 @@ Approved: alt.buddha.short.fat.guy@cygnus.com
            shine of the sea:
     Breath and bloom, shade and shine, -- wonder,
         wealth, and -- how far above them --
-          Truth, thats brighter than gem,
+          Truth, that's brighter than gem,
           Trust, that's purer than pearl, --
     Brightest truth, purest trust in the universe --
               all were for me

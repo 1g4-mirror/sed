@@ -408,3 +408,7 @@ build-ubsan:
 	    { echo "./configure script not found" >&2; exit 1; }
 	./configure CFLAGS="$(UBSAN_CFLAGS)" LDFLAGS="$(UBSAN_LDFLAGS)"
 	make
+
+exclude_file_name_regexp--sc_codespell = \
+  ^(THANKS\.in|testsuite/(8bit|mac-mf)\..+)$$
+codespell_ignore_words_list = ket,tre,debbugs,fo,2Rd,jaques,hel,te,bu,readin

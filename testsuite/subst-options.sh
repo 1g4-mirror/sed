@@ -91,7 +91,7 @@ compare_ subst-exp2 subst-out2 || fail=1
 #
 # Multiline modifier: s///m
 # ('N' will read and concatenate the second line
-#  into the patten space, making it "foo\nbar".
+#  into the pattern space, making it "foo\nbar".
 #  s// will then operate on it as one string).
 printf "foo\nbar\n" > subst-in3 || fail=1
 printf "Xoo\nXar\n" > subst-exp3 || fail=1

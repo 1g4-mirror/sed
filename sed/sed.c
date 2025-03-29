@@ -59,7 +59,7 @@ bool separate_files = false;
 /* If set, follow symlinks when processing in place */
 bool follow_symlinks = false;
 
-/* If set, opearate in 'sandbox' mode */
+/* If set, operate in 'sandbox' mode */
 bool sandbox = false;
 
 /* if set, print debugging information */

@@ -30,7 +30,7 @@ require_en_utf8_locale_
 # Using the first octet alone (\316) causes various multibyte related functions
 # to return '-2' (incomplete multibyte sequence).
 # using the second octet alone (\246) causess same functions to return '-1'
-# (ivalid multibyte sequence).
+# (invalid multibyte sequence).
 
 
 # Reject a valid multibyte delimiter (instead of slash).
@@ -66,7 +66,7 @@ compare_ exp2 out2 || fail=1
 
 
 # An invalid multibyte sequence is treated as a valid single byte,
-# thus accepted as a delimter (instead of slash).
+# thus accepted as a delimiter (instead of slash).
 # This is an implmentation-specific behavior.
 printf 's\246a\246b\246' > prog3 || framework_failure_
 echo a > in3 || framework_failure_

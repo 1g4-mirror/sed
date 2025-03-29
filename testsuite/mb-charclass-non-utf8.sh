@@ -71,11 +71,11 @@ require_valid_ja_shiftjis_locale_ "$LOCALE_JA_SJIS"
 
 
 #
-# Tests 1,2: Test y/// command with multibyte, non-utf8 seqeunce.
-# Implmenetation notes: str_append() has special code path for non-utf8 cases.
+# Tests 1,2: Test y/// command with multibyte, non-utf8 sequence.
+# Implementation notes: str_append() has special code path for non-utf8 cases.
 #
 
-# Test 1: valid multibyte seqeunce
+# Test 1: valid multibyte sequence
 printf 'y/a/\203\133/' > p1 || framework_failure_
 echo Xa > in1 || framework_failure_
 printf 'X\203\133\n' > exp1 || framework_failure_
@@ -83,7 +83,7 @@ printf 'X\203\133\n' > exp1 || framework_failure_
 LC_ALL="$LOCALE_JA_SJIS" sed -f p1 <in1 >out1 || fail=1
 compare_ exp1 out1 || fail=1
 
-# Test 2: invalid multibyte seqeunce, treated as two single-byte characters.
+# Test 2: invalid multibyte sequence, treated as two single-byte characters.
 printf 'y/aa/\203\060/' > p2 || framework_failure_
 LC_ALL="$LOCALE_JA_SJIS" sed -f p2 </dev/null 2>out2 || fail=1
 compare_ /dev/null out2 || fail=1
