@@ -936,11 +936,7 @@ do_list (intmax_t line_len)
       } else {
           *o++ = '\\';
           switch (*p) {
-#if defined __STDC__ && __STDC__-0
             case '\a': *o++ = 'a'; break;
-#else /* Not STDC; we'll just assume ASCII */
-            case 007:  *o++ = 'a'; break;
-#endif
             case '\b': *o++ = 'b'; break;
             case '\f': *o++ = 'f'; break;
             case '\n': *o++ = 'n'; break;

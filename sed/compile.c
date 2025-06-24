@@ -1329,11 +1329,7 @@ normalize_text (char *buf, idx_t len, enum text_types buftype)
       if (*p == '\\' && p+1 < bufend && bracket_state == 0)
         switch (*++p)
           {
-#if defined __STDC__ && __STDC__-0
           case 'a': *q++ = '\a'; p++; continue;
-#else /* Not STDC; we'll just assume ASCII */
-          case 'a': *q++ = '\007'; p++; continue;
-#endif
           /* case 'b': *q++ = '\b'; p++; continue; --- conflicts with \b RE */
           case 'f': *q++ = '\f'; p++; continue;
           case '\n': /*fall through */
