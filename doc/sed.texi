@@ -3378,9 +3378,9 @@ As are the following (@samp{0x5b},@samp{0x5d} are the hexadecimal
 @example
 @group
 $ echo abc | sed 's/[a]/x/'
-Xbc
+xbc
 $ echo abc | sed 's/\x5ba\x5d/x/'
-Xbc
+xbc
 @end group
 @end example
 @codequoteundirected off
