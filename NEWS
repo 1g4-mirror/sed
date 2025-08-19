@@ -18,6 +18,10 @@ GNU sed NEWS                                    -*- outline -*-
   apostrophes) instead of `like this' (with a grave accent and an
   apostrophe).  This tracks the GNU coding standards.
 
+  'sed --posix' now warns about uses of backslashes in the 's' command
+  that are handled by GNU sed but are not portable to other
+  implementations.
+
 ** Build-related
 
   builds no longer fail on platforms without the <getoph.h> header or

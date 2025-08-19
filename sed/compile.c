@@ -449,7 +449,7 @@ snarf_char_class (struct buffer *b, mbstate_t *cur_stat)
 }
 
 static struct buffer *
-match_slash (int slash, int regex)
+match_slash (int slash, bool regex, bool s_command)
 {
   struct buffer *b;
   int ch;
@@ -477,6 +477,11 @@ match_slash (int slash, int regex)
                 break;
               else if (ch != '\n' && (ch != slash || (!regex && ch == '&')))
                 add1_buffer (b, '\\');
+              if (s_command && posixicity != POSIXLY_EXTENDED && ch != '&'
+                  && ch != '\\' && !ISDIGIT (ch) && ch != '\n' && ch != slash)
+                fprintf (stderr, _("%s: warning: using \"\\%c\" in the 's' "
+                                   "command is not portable\n"),
+                         program_name, ch);
             }
           else if (ch == OPEN_BRACKET && regex)
             {
@@ -821,7 +826,7 @@ compile_address (struct addr *addr, int ch)
       addr->addr_type = ADDR_IS_REGEX;
       if (ch == '\\')
         ch = inchar ();
-      if ( !(b = match_slash (ch, true)) )
+      if ( !(b = match_slash (ch, true, false)) )
         bad_prog ("unterminated address regex");
 
       for (;;)
@@ -1147,9 +1152,9 @@ compile_program (struct vector *vector)
             int slash;
 
             slash = inchar ();
-            if ( !(b  = match_slash (slash, true)) )
+            if ( !(b  = match_slash (slash, true, true)) )
               bad_prog ("unterminated 's' command");
-            if ( !(b2 = match_slash (slash, false)) )
+            if ( !(b2 = match_slash (slash, false, true)) )
               bad_prog ("unterminated 's' command");
 
             cur_cmd->x.cmd_subst = OB_MALLOC (&obs, 1, struct subst);
@@ -1175,12 +1180,12 @@ compile_program (struct vector *vector)
             char *src_buf, *dest_buf;
 
             slash = inchar ();
-            if ( !(b = match_slash (slash, false)) )
+            if ( !(b = match_slash (slash, false, false)) )
               bad_prog ("unterminated 'y' command");
             src_buf = get_buffer (b);
             len = normalize_text (src_buf, size_buffer (b), TEXT_BUFFER);
 
-            if ( !(b2 = match_slash (slash, false)) )
+            if ( !(b2 = match_slash (slash, false, false)) )
               bad_prog ("unterminated 'y' command");
             dest_buf = get_buffer (b2);
             dest_len = normalize_text (dest_buf, size_buffer (b2), TEXT_BUFFER);
