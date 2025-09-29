@@ -475,8 +475,20 @@ match_slash (int slash, bool regex, bool s_command)
               ch = inchar ();
               if (ch == EOF)
                 break;
-              else if (ch != '\n' && (ch != slash || (!regex && ch == '&')))
+              /* Preserve backslash except when escaping delimiter in regex. */
+              if (ch != '\n' && (ch != slash || (!regex && ch == '&')))
                 add1_buffer (b, '\\');
+              /* Special case: in regex, treat \cX as atomic escape,
+                 but only in GNU-extension mode (not strict POSIX).  */
+              if (regex && ch == 'c' && posixicity != POSIXLY_BASIC) {
+                add1_buffer (b, ch);
+                int next = inchar ();
+                if (next == EOF)
+                  break;
+                add1_buffer (b, next);
+                /* Skip end-of-loop add1_buffer, we already did it.  */
+                continue;
+              }
               if (s_command && posixicity != POSIXLY_EXTENDED && ch != '&'
                   && ch != '\\' && !ISDIGIT (ch) && ch != '\n' && ch != slash)
                 fprintf (stderr, _("%s: warning: using \"\\%c\" in the 's' "

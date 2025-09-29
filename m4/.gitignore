@@ -271,7 +271,6 @@
 /wctype.m4
 /windows-rc.m4
 /xgetcwd.m4
-/getlocalename_l.m4
 /getopt.m4
 /frexp.m4
 /frexpl.m4
