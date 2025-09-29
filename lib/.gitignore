@@ -5,7 +5,6 @@
 /acl-internal.h
 /acl.h
 /acl_entries.c
-/alignof.h
 /alloca.h
 /alloca.in.h
 /arg-nonnull.h
@@ -23,7 +22,6 @@
 /c-strcase.h
 /c-strcasecmp.c
 /c-strcaseeq.h
-/c-strncasecmp.c
 /c32is-impl.h
 /c32isprint.c
 /c32isspace.c
@@ -45,6 +43,7 @@
 /ctype.in.h
 /dfa.c
 /dfa.h
+/dirent.h
 /dirname-lgpl.c
 /dirname.h
 /dup2.c
@@ -284,3 +283,11 @@
 /xalloc-oversized.h
 /xalloc.h
 /xmalloc.c
+/dirent.in.h
+/file-has-acl.c
+/fseterr.c
+/fseterr.h
+/issymlink.c
+/issymlink.h
+/stdio-consolesafe.c
+/string.c

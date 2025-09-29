@@ -273,3 +273,14 @@
 /xgetcwd.m4
 /getlocalename_l.m4
 /getopt.m4
+/frexp.m4
+/frexpl.m4
+/fseterr.m4
+/getlocalename_l.m4
+/gettext_h.m4
+/mkfifo.m4
+/stdckdint_h.m4
+/stringeq.m4
+/trunc.m4
+/truncl.m4
+/unitypes_h.m4
