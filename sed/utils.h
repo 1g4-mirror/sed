@@ -51,3 +51,6 @@ idx_t size_buffer (struct buffer const *b) _GL_ATTRIBUTE_PURE;
 char *add_buffer (struct buffer *b, const char *p, idx_t n);
 char *add1_buffer (struct buffer *b, int ch);
 void free_buffer (struct buffer *b);
+
+char *quotef (char const *arg);
+char *quotef_n (int n, char const *arg);

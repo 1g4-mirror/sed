@@ -566,7 +566,7 @@ open_next_file (const char *name, struct input *input)
         {
           const char *ptr = strerror (errno);
           fprintf (stderr, _("%s: can't read %s: %s\n"), program_name,
-                   name, ptr);
+                   quotef (name), ptr);
           input->read_fn = read_always_fail; /* a redundancy */
           ++input->bad_count;
           return;
@@ -591,12 +591,14 @@ open_next_file (const char *name, struct input *input)
         strcpy (tmpdir, ".");
 
       if (isatty (fileno (input->fp)))
-        panic (_("couldn't edit %s: is a terminal"), input->in_file_name);
+        panic (_("couldn't edit %s: is a terminal"),
+               quotef (input->in_file_name));
 
       input_fd = fileno (input->fp);
       fstat (input_fd, &input->st);
       if (!S_ISREG (input->st.st_mode))
-        panic (_("couldn't edit %s: not a regular file"), input->in_file_name);
+        panic (_("couldn't edit %s: not a regular file"),
+               quotef (input->in_file_name));
 
       if (is_selinux_enabled () > 0)
         {
@@ -609,7 +611,7 @@ open_next_file (const char *name, struct input *input)
               if (setfscreatecon (con) < 0)
                 fprintf (stderr, _("%s: warning: failed to set default" \
                                    " file creation context to %s: %s\n"),
-                         program_name, con, strerror (errno));
+                         program_name, quotef (con), strerror (errno));
               freecon (con);
             }
           else
@@ -617,7 +619,8 @@ open_next_file (const char *name, struct input *input)
               if (errno != ENOSYS)
                 fprintf (stderr, _("%s: warning: failed to get" \
                                    " security context of %s: %s\n"),
-                         program_name, input->in_file_name, strerror (errno));
+                         program_name, quotef (input->in_file_name),
+                         strerror (errno));
             }
         }
 
@@ -633,8 +636,8 @@ open_next_file (const char *name, struct input *input)
         }
 
       if (!output_file.fp)
-        panic (_("couldn't open temporary file %s: %s"), input->out_file_name,
-               strerror (errno));
+        panic (_("couldn't open temporary file %s: %s"),
+               quotef (input->out_file_name), strerror (errno));
     }
   else
     {

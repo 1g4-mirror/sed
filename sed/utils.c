@@ -30,6 +30,7 @@
 #include "eloop-threshold.h"
 #include "idx.h"
 #include "minmax.h"
+#include "quotearg.h"
 #include "unlocked-io.h"
 #include "utils.h"
 #include "progname.h"
@@ -86,6 +87,20 @@ panic (const char *str, ...)
   exit (EXIT_PANIC);
 }
 
+/* Quote file names.  */
+
+char *
+quotef (char const *arg)
+{
+  return quotef_n (0, arg);
+}
+
+char *
+quotef_n (int n, char const *arg)
+{
+  return quotearg_n_style_colon (n, shell_escape_quoting_style, arg);
+}
+
 /* Internal routine to get a filename from open_files */
 static const char * _GL_ATTRIBUTE_PURE
 utils_fp_name (FILE *fp)
@@ -126,7 +141,7 @@ ck_fopen (const char *name, const char *mode, int fail)
   if (!fp)
     {
       if (fail)
-        panic (_("couldn't open file %s: %s"), name, strerror (errno));
+        panic (_("couldn't open file %s: %s"), quotef (name), strerror (errno));
 
       return NULL;
     }
@@ -145,7 +160,7 @@ ck_fdopen ( int fd, const char *name, const char *mode, int fail)
   if (!fp)
     {
       if (fail)
-        panic (_("couldn't attach to %s: %s"), name, strerror (errno));
+        panic (_("couldn't attach to %s: %s"), quotef (name), strerror (errno));
 
       return NULL;
     }
@@ -209,7 +224,7 @@ ck_mkstemp (char **p_filename, const char *tmpdir,
 
 #if O_BINARY
       if (binary_mode && set_binary_mode (fd, O_BINARY) == -1)
-        panic (_("failed to set binary mode on '%s'"), template);
+        panic (_("%s: failed to set binary mode"), quotef (template));
 #endif
 
       fp = fdopen (fd, mode);
@@ -217,7 +232,7 @@ ck_mkstemp (char **p_filename, const char *tmpdir,
     }
 
   if (!fp)
-    panic (_("couldn't open temporary file %s: %s"), template,
+    panic (_("couldn't open temporary file %s: %s"), quotef (template),
            strerror (err));
 
   register_open_file (fp, template);
@@ -232,8 +247,8 @@ ck_fwrite (const void *ptr, idx_t size, idx_t nmemb, FILE *stream)
   if (size && fwrite (ptr, size, nmemb, stream) != nmemb)
     panic (ngettext ("couldn't write %jd item to %s: %s",
                      "couldn't write %jd items to %s: %s", nmemb),
-          nmemb, utils_fp_name (stream),
-          strerror (errno));
+           nmemb, quotef (utils_fp_name (stream)),
+           strerror (errno));
 }
 
 /* Panic on failing fread */
@@ -242,7 +257,8 @@ ck_fread (void *ptr, idx_t size, idx_t nmemb, FILE *stream)
 {
   clearerr (stream);
   if (size && (nmemb=fread (ptr, size, nmemb, stream)) <= 0 && ferror (stream))
-    panic (_("read error on %s: %s"), utils_fp_name (stream), strerror (errno));
+    panic (_("read error on %s: %s"), quotef (utils_fp_name (stream)),
+           strerror (errno));
 
   return nmemb;
 }
@@ -251,11 +267,12 @@ ssize_t
 ck_getdelim (char **text, size_t *buflen, char delim, FILE *stream)
 {
   if (ferror (stream))
-    panic (_("read error on %s"), utils_fp_name (stream));
+    panic (_("read error on %s"), quotef (utils_fp_name (stream)));
 
   ssize_t result = getdelim (text, buflen, delim, stream);
   if (ferror (stream)) /* implies result < 0, hence errno is set */
-    panic (_("read error on %s: %s"), utils_fp_name (stream), strerror (errno));
+    panic (_("read error on %s: %s"), quotef (utils_fp_name (stream)),
+           strerror (errno));
 
   return result;
 }
@@ -269,7 +286,8 @@ ck_fflush (FILE *stream)
 
   clearerr (stream);
   if (fflush (stream) == EOF && errno != EBADF)
-    panic ("couldn't flush %s: %s", utils_fp_name (stream), strerror (errno));
+    panic ("couldn't flush %s: %s", quotef (utils_fp_name (stream)),
+           strerror (errno));
 }
 
 /* Panic on failing fclose */
@@ -309,7 +327,7 @@ do_ck_fclose (FILE *fp, char const *name)
   clearerr (fp);
 
   if (fclose (fp) == EOF)
-    panic ("couldn't close %s: %s", name, strerror (errno));
+    panic ("couldn't close %s: %s", quotef (name), strerror (errno));
 }
 
 /* Follow symlink FNAME and return the ultimate target, stored in a
@@ -354,10 +372,11 @@ follow_symlink (const char *fname)
         {
           if (errno == EINVAL)
             break;
-          panic (_("couldn't readlink %s: %s"), fn, strerror (errno));
+          panic (_("couldn't readlink %s: %s"), quotef (fn), strerror (errno));
         }
       if (__eloop_threshold () <= num_links)
-        panic (_("couldn't follow symlink %s: %s"), fname, strerror (ELOOP));
+        panic (_("couldn't follow symlink %s: %s"), quotef (fname),
+               strerror (ELOOP));
 
       if ((linklen == 0 || buf[buf_used] != '/') && (c = strrchr (fn, '/')))
         {
@@ -404,7 +423,8 @@ ck_rename (const char *from, const char *to)
   if (rd != -1)
     return;
 
-  panic (_("cannot rename %s to %s: %s"), from, to, strerror (errno));
+  panic (_("cannot rename %s to %s: %s"),
+         quotef_n (0, from), quotef_n (1, to), strerror (errno));
 }
 
 

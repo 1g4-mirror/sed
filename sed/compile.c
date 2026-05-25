@@ -119,7 +119,7 @@ vbad_prog (char const *why, va_list ap)
 {
   if (cur_input.name)
     fprintf (stderr, _("%s: file %s line %jd: "), program_name,
-             cur_input.name, cur_input.line);
+             quotef (cur_input.name), cur_input.line);
   else
     fprintf (stderr, _("%s: -e expression #%d, char %td: "),
              program_name,
