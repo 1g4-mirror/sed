@@ -1040,7 +1040,7 @@ do_subst (struct subst *sub)
             break;
 
           printf ("  regex[%d] = %td-%td '", i,
-                  (ptrdiff_t)regs.start[i], (ptrdiff_t)regs.end[i]);
+                  (ptrdiff_t) {regs.start[i]}, (ptrdiff_t) {regs.end[i]});
 
           if (regs.start[i] != regs.end[i])
             fwrite (line.active + regs.start[i], regs.end[i] -regs.start[i],
