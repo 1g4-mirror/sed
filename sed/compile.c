@@ -1612,7 +1612,7 @@ finish_program (struct vector *program)
   }
 
 #ifdef lint
-  for (int i = 0; i < program->v_length; ++i)
+  for (idx_t i = 0; i < program->v_length; ++i)
     {
       const struct sed_cmd *sc = &program->v[i];
 

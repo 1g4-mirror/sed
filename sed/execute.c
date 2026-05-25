@@ -698,9 +698,9 @@ static void
 reset_addresses (struct vector *vec)
 {
   struct sed_cmd *cur_cmd;
-  int n;
+  idx_t n;
 
-  for (cur_cmd = vec->v, n = vec->v_length; n--; cur_cmd++)
+  for (cur_cmd = vec->v, n = vec->v_length; n != 0; cur_cmd++, n--)
     if (cur_cmd->a1
         && cur_cmd->a1->addr_type == ADDR_IS_NUM
         && cur_cmd->a1->addr_number == 0)

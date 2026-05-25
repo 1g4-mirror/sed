@@ -27,7 +27,7 @@
 #include <sys/types.h>
 
 /* indentation level when printing the program */
-static int block_level = 0;
+static off_t block_level = 0;
 
 
 void
@@ -416,7 +416,7 @@ debug_print_command (const struct vector *program, const struct sed_cmd *sc)
   if (sc->cmd == '}')
     --block_level;
 
-  for (int j = 0; j < block_level; ++j)
+  for (off_t j = 0; j < block_level; j++)
     fputs ("  ", stdout);
 
   debug_print_addr (sc->a1);
