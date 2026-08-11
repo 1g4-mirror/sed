@@ -18,11 +18,6 @@
 /btoc32.c
 /btowc.c
 /c++defs.h
-/c-ctype.c
-/c-ctype.h
-/c-strcase.h
-/c-strcasecmp.c
-/c-strcaseeq.h
 /c32_apply_type_test.c
 /c32_get_type_test.c
 /c32is-impl.h
@@ -60,7 +55,6 @@
 /dirname.h
 /dup2.c
 /dynarray.h
-/eloop-threshold.h
 /errno.h
 /errno.in.h
 /error.c
@@ -155,6 +149,7 @@
 /memeq.c
 /mempcpy.c
 /memrchr.c
+/min-eloop-threshold.h
 /minmax.h
 /mkdir.c
 /mkostemp.c

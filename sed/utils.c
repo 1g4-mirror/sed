@@ -27,7 +27,7 @@
 #include <limits.h>
 
 #include "binary-io.h"
-#include "eloop-threshold.h"
+#include "min-eloop-threshold.h"
 #include "idx.h"
 #include "minmax.h"
 #include "quotearg.h"
@@ -374,7 +374,7 @@ follow_symlink (const char *fname)
             break;
           panic (_("couldn't readlink %s: %s"), quotef (fn), strerror (errno));
         }
-      if (__eloop_threshold () <= num_links)
+      if (MIN_ELOOP_THRESHOLD <= num_links)
         panic (_("couldn't follow symlink %s: %s"), quotef (fname),
                strerror (ELOOP));
 
