@@ -451,13 +451,13 @@ match_slash (int slash, bool regex, bool s_command)
 {
   struct buffer *b;
   int ch;
-  mbstate_t cur_stat = { 0, };
+  mbstate_t cur_stat; mbszero (&cur_stat);
 
   /* We allow only 1 byte characters for a slash.  */
   if (IS_MB_CHAR (slash, &cur_stat))
     bad_prog ("delimiter character is not a single-byte character");
 
-  cur_stat = (mbstate_t) {0};
+  mbszero (&cur_stat);
 
   b = init_buffer ();
   while ((ch = inchar ()) != EOF && ch != '\n')
@@ -1212,7 +1212,7 @@ compile_program (struct vector *vector)
                 idx_t *src_lens = XNMALLOC (len, idx_t);
                 char **trans_pairs;
                 size_t mbclen;
-                mbstate_t cur_stat = { 0, };
+                mbstate_t cur_stat; mbszero (&cur_stat);
 
                 /* Enumerate how many character the source buffer has.  */
                 for (i = 0, j = 0; i < len;)
@@ -1228,7 +1228,7 @@ compile_program (struct vector *vector)
                   }
                 src_char_num = j;
 
-                cur_stat = (mbstate_t) {0};
+                mbszero (&cur_stat);
                 idx = 0;
 
                 /* trans_pairs = {src(0), dest(0), src(1), dest(1), ..., NULL}
@@ -1329,7 +1329,7 @@ normalize_text (char *buf, idx_t len, enum text_types buftype)
   int bracket_state = 0;
 
   size_t mbclen;
-  mbstate_t cur_stat = { 0, };
+  mbstate_t cur_stat; mbszero (&cur_stat);
 
   while (p < bufend)
     {

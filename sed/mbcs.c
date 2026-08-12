@@ -47,7 +47,7 @@ is_mb_char (int ch, mbstate_t *cur_stat)
       return 1;
 
     case -1: /* Invalid sequence, byte treated like a single-byte character */
-      *cur_stat = (mbstate_t) {0};
+      mbszero (cur_stat);
       return 0;
 
     case 1: /* A valid byte, check if part of on-going multibyte sequence */

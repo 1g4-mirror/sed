@@ -172,7 +172,7 @@ str_append (struct line *to, const char *string, idx_t length)
            single-byte character.  */
         if (n == (size_t) -1 || n == (size_t) -2)
           {
-            to->mbstate = (mbstate_t) {0};
+            mbszero (&to->mbstate);
             n = 1;
           }
 
@@ -216,7 +216,7 @@ str_append_modified (struct line *to, const char *string, idx_t length,
             }
 
           str_append (to, string, 1);
-          to->mbstate = (mbstate_t) {0};
+          mbszero (&to->mbstate);
           n = 1;
           string += n, length -= n;
           continue;
@@ -284,7 +284,7 @@ line_init (struct line *buf, struct line *state, idx_t initial_size)
   if (state)
     buf->mbstate = state->mbstate;
   else
-    buf->mbstate = (mbstate_t) {0};
+    mbszero (&buf->mbstate);
 }
 
 /* Reset a "struct line" buffer to length zero.  Copy multibyte state from
@@ -303,7 +303,7 @@ line_reset (struct line *buf, struct line *state)
       if (state)
         buf->mbstate = state->mbstate;
       else
-        buf->mbstate = (mbstate_t) {0};
+        mbszero (&buf->mbstate);
     }
 }
 
@@ -1191,7 +1191,7 @@ static void
 translate_mb (char *const *trans)
 {
   idx_t idx; /* index in the input line.  */
-  mbstate_t mbstate = { 0, };
+  mbstate_t mbstate; mbszero (&mbstate);
   for (idx = 0; idx < line.length;)
     {
       idx_t i;
