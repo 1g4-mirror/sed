@@ -362,8 +362,9 @@ next_cmd_entry (struct vector *v)
     v->v = xpalloc (v->v, &v->v_allocated, 1, -1, sizeof *v->v);
 
   cmd = v->v + v->v_length;
-  memset (cmd, 0, sizeof *cmd);
-  cmd->cmd = '\0';	/* something invalid, to catch bugs early */
+
+  /* This sets cmd->cmd to something invalid, to catch bugs early.  */
+  *cmd = (struct sed_cmd) {NULL};
 
   return cmd;
 }
@@ -456,7 +457,7 @@ match_slash (int slash, bool regex, bool s_command)
   if (IS_MB_CHAR (slash, &cur_stat))
     bad_prog ("delimiter character is not a single-byte character");
 
-  memset (&cur_stat, 0, sizeof cur_stat);
+  cur_stat = (mbstate_t) {0};
 
   b = init_buffer ();
   while ((ch = inchar ()) != EOF && ch != '\n')
@@ -631,7 +632,7 @@ setup_label (struct sed_label *list, idx_t idx, char *name,
   ret->v_index = idx;
   ret->name = name;
   if (err_info)
-    memcpy (&ret->err_info, err_info, sizeof (ret->err_info));
+    ret->err_info = *err_info;
   ret->next = list;
   return ret;
 }
@@ -1227,7 +1228,7 @@ compile_program (struct vector *vector)
                   }
                 src_char_num = j;
 
-                memset (&cur_stat, 0, sizeof cur_stat);
+                cur_stat = (mbstate_t) {0};
                 idx = 0;
 
                 /* trans_pairs = {src(0), dest(0), src(1), dest(1), ..., NULL}
@@ -1527,7 +1528,7 @@ check_final_program (struct vector *program)
   if (blocks)
     {
       /* update info for error reporting: */
-      memcpy (&cur_input, &blocks->err_info, sizeof (cur_input));
+      cur_input = blocks->err_info;
       bad_prog ("unmatched '{'");
     }
 

@@ -56,8 +56,6 @@ struct line {
   mbstate_t mbstate;
 };
 
-#define SIZEOF_LINE	offsetof (struct line, mbstate)
-
 /* A queue of text to write out at the end of a cycle
    (filled by the "a", "r" and "R" commands.) */
 struct append_queue {
@@ -174,7 +172,7 @@ str_append (struct line *to, const char *string, idx_t length)
            single-byte character.  */
         if (n == (size_t) -1 || n == (size_t) -2)
           {
-            memset (&to->mbstate, 0, sizeof (to->mbstate));
+            to->mbstate = (mbstate_t) {0};
             n = 1;
           }
 
@@ -201,7 +199,7 @@ str_append_modified (struct line *to, const char *string, idx_t length,
   if (to->alloc - to->length < length * mb_cur_max)
     resize_line (to, length * mb_cur_max);
 
-  memcpy (&from_stat, &to->mbstate, sizeof (mbstate_t));
+  from_stat = to->mbstate;
   while (length)
     {
       wchar_t wc;
@@ -218,7 +216,7 @@ str_append_modified (struct line *to, const char *string, idx_t length,
             }
 
           str_append (to, string, 1);
-          memset (&to->mbstate, 0, sizeof (from_stat));
+          to->mbstate = (mbstate_t) {0};
           n = 1;
           string += n, length -= n;
           continue;
@@ -283,11 +281,10 @@ line_init (struct line *buf, struct line *state, idx_t initial_size)
   buf->alloc = initial_size;
   buf->length = 0;
   buf->chomped = true;
-
   if (state)
-    memcpy (&buf->mbstate, &state->mbstate, sizeof (buf->mbstate));
+    buf->mbstate = state->mbstate;
   else
-    memset (&buf->mbstate, 0, sizeof (buf->mbstate));
+    buf->mbstate = (mbstate_t) {0};
 }
 
 /* Reset a "struct line" buffer to length zero.  Copy multibyte state from
@@ -304,9 +301,9 @@ line_reset (struct line *buf, struct line *state)
     {
       buf->length = 0;
       if (state)
-        memcpy (&buf->mbstate, &state->mbstate, sizeof (buf->mbstate));
+        buf->mbstate = state->mbstate;
       else
-        memset (&buf->mbstate, 0, sizeof (buf->mbstate));
+        buf->mbstate = (mbstate_t) {0};
     }
 }
 
@@ -335,7 +332,7 @@ line_copy (struct line *from, struct line *to, int state)
   memcpy (to->active, from->active, from->length);
 
   if (state)
-    memcpy (&to->mbstate, &from->mbstate, sizeof (from->mbstate));
+    to->mbstate = from->mbstate;
 }
 
 /* Append the contents of the line 'from' to the line 'to'.
@@ -348,7 +345,7 @@ line_append (struct line *from, struct line *to, int state)
   to->chomped = from->chomped;
 
   if (state)
-    memcpy (&to->mbstate, &from->mbstate, sizeof (from->mbstate));
+    to->mbstate = from->mbstate;
 }
 
 /* Exchange two "struct line" buffers.
@@ -356,19 +353,19 @@ line_append (struct line *from, struct line *to, int state)
 static void
 line_exchange (struct line *a, struct line *b, int state)
 {
-  struct line t;
-
   if (state)
     {
-      memcpy (&t,  a, sizeof (struct line));
-      memcpy ( a,  b, sizeof (struct line));
-      memcpy ( b, &t, sizeof (struct line));
+      struct line t = *a;
+      *a = *b;
+      *b = t;
     }
   else
     {
-      memcpy (&t,  a, SIZEOF_LINE);
-      memcpy ( a,  b, SIZEOF_LINE);
-      memcpy ( b, &t, SIZEOF_LINE);
+      char *t1 = a->text   ; a->text    = b->text   ; b->text    = t1;
+      char *t2 = a->active ; a->active  = b->active ; b->active  = t2;
+      idx_t t3 = a->length ; a->length  = b->length ; b->length  = t3;
+      idx_t t4 = a->alloc  ; a->alloc   = b->alloc  ; b->alloc   = t4;
+      bool  t5 = a->chomped; a->chomped = b->chomped; b->chomped = t5;
     }
 }
 
@@ -579,9 +576,8 @@ open_next_file (const char *name, struct input *input)
     {
       int input_fd;
       char *tmpdir, *p;
-      char *old_fscreatecon;
+      char *old_fscreatecon = NULL;
       int reset_fscreatecon = 0;
-      memset (&old_fscreatecon, 0, sizeof (old_fscreatecon));
 
       /* get the base name */
       tmpdir = xstrdup (input->in_file_name);
