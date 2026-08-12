@@ -320,7 +320,7 @@ get_openfile (struct output **file_ptrs, const char *mode, int fail)
     bad_prog ("missing filename in r/R/w/W commands");
 
   for (p=*file_ptrs; p; p=p->link)
-    if (strcmp (p->name, file_name) == 0)
+    if (streq (p->name, file_name))
       break;
 
   if (posixicity == POSIXLY_EXTENDED)
@@ -332,7 +332,7 @@ get_openfile (struct output **file_ptrs, const char *mode, int fail)
          cannot be used in the initializer for special_files */
       my_stdin = stdin; my_stdout = stdout; my_stderr = stderr;
       for (special = special_files; special->outf.name; special++)
-        if (strcmp (special->outf.name, file_name) == 0)
+        if (streq (special->outf.name, file_name))
           {
             special->outf.fp = *special->pfp;
             free_buffer (b);
@@ -1546,7 +1546,7 @@ check_final_program (struct vector *program)
   for (go = jumps; go; go = release_label (go))
     {
       for (lbl = labels; lbl; lbl = lbl->next)
-        if (strcmp (lbl->name, go->name) == 0)
+        if (streq (lbl->name, go->name))
           break;
       if (lbl)
         {

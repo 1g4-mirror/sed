@@ -39,7 +39,6 @@ local-checks-to-skip =			\
   sc_preprocessor_indentation		\
   sc_prohibit_atoi_atof			\
   sc_prohibit_magic_number_exit		\
-  sc_prohibit_strcmp			\
   sc_unmarked_diagnostics		\
   sc_useless_cpp_parens
 
@@ -230,10 +229,10 @@ sc_gitignore_missing:
 
 
 # Similar to the gnulib maint.mk rule for sc_prohibit_strcmp
-# Use STREQ_LEN or STRPREFIX rather than comparing strncmp == 0, or != 0.
+# Use STREQ_LEN rather than comparing strncmp == 0, or != 0.
 sc_prohibit_strncmp:
 	@prohibit='^[^#].*str''ncmp *\('				\
-	halt='use STREQ_LEN or STRPREFIX instead of str''ncmp'		\
+	halt='use STREQ_LEN instead of str''ncmp'			\
 	  $(_sc_search_regexp)
 
 # Ensure that tests don't include a redundant fail=0.

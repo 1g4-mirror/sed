@@ -672,7 +672,7 @@ closedown (struct input *input)
 
       ck_fclose (input->fp);
       ck_fclose (output_file.fp);
-      if (strcmp (in_place_extension, "*") != 0)
+      if (!streq (in_place_extension, "*"))
         {
           char *backup_file_name = get_backup_file_name (target_name);
           ck_rename (target_name, backup_file_name);

@@ -67,10 +67,7 @@ void
 initialize_mbcs (void)
 {
   /* For UTF-8, we know that the encoding is stateless.  */
-  const char *codeset_name;
-
-  codeset_name = locale_charset ();
-  is_utf8 = (strcmp (codeset_name, "UTF-8") == 0);
+  is_utf8 = streq (locale_charset (), "UTF-8");
 
   mb_cur_max = MB_CUR_MAX;
 }
