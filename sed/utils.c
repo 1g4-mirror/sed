@@ -245,8 +245,8 @@ ck_fwrite (const void *ptr, idx_t size, idx_t nmemb, FILE *stream)
 {
   clearerr (stream);
   if (size && fwrite (ptr, size, nmemb, stream) != nmemb)
-    panic (ngettext ("couldn't write %jd item to %s: %s",
-                     "couldn't write %jd items to %s: %s", nmemb),
+    panic (ngettext ("couldn't write %td item to %s: %s",
+                     "couldn't write %td items to %s: %s", nmemb),
            nmemb, quotef (utils_fp_name (stream)),
            strerror (errno));
 }
