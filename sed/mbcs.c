@@ -39,14 +39,16 @@ is_mb_char (int ch, mbstate_t *cur_stat)
 {
   const char c = ch ;
   const int mb_pending = !mbsinit (cur_stat);
-  const int result = mbrtowc (NULL, &c, 1, cur_stat);
+  size_t result = mbrtowc (NULL, &c, 1, cur_stat);
 
   switch (result)
     {
-    case -2: /* Beginning or middle of valid multibyte sequence */
+    case (size_t) -2:
+      /* Beginning or middle of valid multibyte sequence.  */
       return 1;
 
-    case -1: /* Invalid sequence, byte treated like a single-byte character */
+    case (size_t) -1:
+      /* Invalid sequence, byte treated like a single-byte character.  */
       mbszero (cur_stat);
       return 0;
 
@@ -58,7 +60,7 @@ is_mb_char (int ch, mbstate_t *cur_stat)
       return 1;
 
     default: /* Should never happen, as per mbrtowc(3) documentation */
-      panic ("is_mb_char: mbrtowc (0x%x) returned %d",
+      panic ("is_mb_char: mbrtowc (0x%x) returned %zu",
              (unsigned int) ch, result);
     }
 }
