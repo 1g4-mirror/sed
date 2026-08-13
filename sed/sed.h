@@ -229,7 +229,7 @@ debug_print_command (const struct vector *program, const struct sed_cmd *sc);
 void
 debug_print_program (const struct vector *program);
 void
-debug_print_char (char c);
+debug_print_char (int c, char const *p, idx_t clen);
 
 int process_files (struct vector *, char **argv);
 

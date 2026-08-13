@@ -894,30 +894,29 @@ match_address_p (struct sed_cmd *cmd, struct input *input)
 static void
 do_list (intmax_t line_len)
 {
-  unsigned char *p = (unsigned char *)line.active;
+  char *p = line.active;
   idx_t len = line.length;
   idx_t width = 0;
   FILE *fp = output_file.fp;
+  mbstate_t mbs; mbszero (&mbs);
 
   output_missing_newline (&output_file);
-  for (; len--; ++p) {
-      char obuf[sizeof "\\377" - 1];
+  while (len)
+    {
+      char obuf[(sizeof "\\377" - 1) * MB_LEN_MAX];
       char *o = obuf;
-
-      /* Some locales define 8-bit characters as printable.  This makes the
-         testsuite fail at 8to7.sed because the 'l' command in fact will not
-         convert the 8-bit characters. */
-#if defined isascii || defined HAVE_ISASCII
-      if (isascii (*p) && ISPRINT (*p)) {
-#else
-      if (ISPRINT (*p)) {
-#endif
-          *o++ = *p;
-          if (*p == '\\')
+      int ch;
+      idx_t chlen = mbrtowc1 (&ch, p, len, &mbs);
+      if (0 <= ch && iswprint (ch))
+        {
+          o = mempcpy (o, p, chlen);
+          if (ch == '\\')
             *o++ = '\\';
-      } else {
+        }
+      else
+        {
           *o++ = '\\';
-          switch (*p) {
+          switch (ch) {
             case '\a': *o++ = 'a'; break;
             case '\b': *o++ = 'b'; break;
             case '\f': *o++ = 'f'; break;
@@ -926,12 +925,20 @@ do_list (intmax_t line_len)
             case '\t': *o++ = 't'; break;
             case '\v': *o++ = 'v'; break;
             default:
-              *o++ = '0' + ((*p & 0300) >> 6);
-              *o++ = '0' + ((*p & 0070) >> 3);
-              *o++ = '0' + ((*p & 0007) >> 0);
+              for (idx_t i = 0; i < chlen; i++)
+                {
+                  *o = '\\';
+                  o += !!i;
+                  *o++ = '0' + ((p[i] & 0300) >> 6);
+                  *o++ = '0' + ((p[i] & 0070) >> 3);
+                  *o++ = '0' + ((p[i] & 0007) >> 0);
+                }
               break;
             }
-      }
+        }
+      p += chlen;
+      len -= chlen;
+
       idx_t olen = o - obuf;
       if (0 < line_len && line_len - olen <= width) {
           ck_fwrite ("\\", 1, 1, fp);
@@ -940,7 +947,7 @@ do_list (intmax_t line_len)
       }
       ck_fwrite (obuf, 1, olen, fp);
       width += olen;
-  }
+    }
   ck_fwrite ("$", 1, 1, fp);
   ck_fwrite (&buffer_delimiter, 1, 1, fp);
   flush_output (fp);
@@ -1254,8 +1261,15 @@ debug_print_line (struct line *ln)
   const char *p = src;
 
   fputs ( (ln == &hold) ? "HOLD:    ":"PATTERN: ", stdout);
-  while (l--)
-    debug_print_char (*p++);
+  mbstate_t mbs; mbszero (&mbs);
+  while (l)
+    {
+      int ch;
+      idx_t chlen = mbrtowc1 (&ch, p, l, &mbs);
+      debug_print_char (ch, p, chlen);
+      p += chlen;
+      l -= chlen;
+    }
   putchar ('\n');
 }
 

@@ -31,11 +31,11 @@ static off_t block_level = 0;
 
 
 void
-debug_print_char (char c)
+debug_print_char (int c, char const *p, idx_t clen)
 {
-  if (ISPRINT (c) && c != '\\')
+  if (0 <= c && iswprint (c) && c != '\\')
     {
-      putchar (c);
+      fwrite (p, 1, clen, stdout);
       return;
     }
 
@@ -65,7 +65,8 @@ debug_print_char (char c)
       break;
 
     default:
-      printf ("o%03o", (unsigned int) c);
+      for (idx_t i = 0; i < clen; i++)
+        printf (&"\\o%03o"[!i], (unsigned int) {(unsigned char) {p[i]}});
     }
 }
 
@@ -73,13 +74,17 @@ static void
 debug_print_regex_pattern (const char *pat, idx_t len)
 {
   const char *p = pat;
-  while (len--)
+  mbstate_t mbs; mbszero (&mbs);
+  while (len)
     {
-      if (*p == '/')
+      int ch;
+      idx_t chlen = mbrtowc1 (&ch, p, len, &mbs);
+      if (ch == '/')
         fputs ("\\/", stdout);
       else
-        debug_print_char (*p);
-      ++p;
+        debug_print_char (ch, p, chlen);
+      p += chlen;
+      len -= chlen;
     }
 }
 
