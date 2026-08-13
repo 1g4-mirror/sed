@@ -1211,24 +1211,18 @@ compile_program (struct vector *vector)
                 idx_t i, j, idx, src_char_num;
                 idx_t *src_lens = XNMALLOC (len, idx_t);
                 char **trans_pairs;
-                size_t mbclen;
                 mbstate_t cur_stat; mbszero (&cur_stat);
 
                 /* Enumerate how many character the source buffer has.  */
                 for (i = 0, j = 0; i < len;)
                   {
-                    mbclen = MBRLEN (src_buf + i, len - i, &cur_stat);
-                    /* An invalid sequence, or a truncated multibyte character.
-                       We treat it as a single-byte character.  */
-                    if (mbclen == (size_t) -1 || mbclen == (size_t) -2
-                        || mbclen == 0)
-                      mbclen = 1;
+                    size_t mbclen = mbrlen1 (src_buf + i, len - i, &cur_stat);
                     src_lens[j++] = mbclen;
                     i += mbclen;
                   }
                 src_char_num = j;
 
-                mbszero (&cur_stat);
+                mbstate_t tr_stat; mbszero (&tr_stat);
                 idx = 0;
 
                 /* trans_pairs = {src(0), dest(0), src(1), dest(1), ..., NULL}
@@ -1249,12 +1243,8 @@ compile_program (struct vector *vector)
                     src_buf += src_lens[i]; /* Forward to next character.  */
 
                     /* Fetch the i-th destination character.  */
-                    mbclen = MBRLEN (dest_buf + idx, dest_len - idx, &cur_stat);
-                    /* An invalid sequence, or a truncated multibyte character.
-                       We treat it as a single-byte character.  */
-                    if (mbclen == (size_t) -1 || mbclen == (size_t) -2
-                        || mbclen == 0)
-                      mbclen = 1;
+                    size_t mbclen = mbrlen1 (dest_buf + idx, dest_len - idx,
+                                             &tr_stat);
 
                     /* Set the i-th destination character.  */
                     trans_pairs[2 * i + 1] = XNMALLOC (mbclen + 1, char);
@@ -1328,19 +1318,13 @@ normalize_text (char *buf, idx_t len, enum text_types buftype)
      respectively within these three types of subexpressions.  */
   int bracket_state = 0;
 
-  size_t mbclen;
   mbstate_t cur_stat; mbszero (&cur_stat);
 
   while (p < bufend)
     {
-      mbclen = MBRLEN (p, bufend - p, &cur_stat);
+      size_t mbclen = mbrlen1 (p, bufend - p, &cur_stat);
       if (mbclen != 1)
         {
-          /* An invalid sequence, or a truncated multibyte character.
-             We treat it as a single-byte character.  */
-          if (mbclen == (size_t) -1 || mbclen == (size_t) -2 || mbclen == 0)
-            mbclen = 1;
-
           memmove (q, p, mbclen);
           q += mbclen;
           p += mbclen;

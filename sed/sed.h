@@ -25,6 +25,12 @@
 
 #include "utils.h"
 
+_GL_INLINE_HEADER_BEGIN
+
+#ifndef SED_INLINE
+# define SED_INLINE _GL_INLINE
+#endif
+
 /* Struct vector is used to describe a compiled sed program. */
 struct vector {
   struct sed_cmd *v;	/* a dynamically allocated array */
@@ -275,8 +281,21 @@ extern bool debug;
 #define MBSINIT(s) \
   (mb_cur_max == 1 ? 1 : mbsinit ((s)))
 
-#define MBRLEN(s, n, ps) \
-  (mb_cur_max == 1 ? 1 : mbrtowc (NULL, s, n, ps))
+/* If buffer S of size N starts with a multibyte character return its length,
+   otherwise return 1.  N must be positive.  PS is the conversion status.
+   The returned value is in the range 1..MB_CUR_MAX.  */
+SED_INLINE idx_t
+mbrlen1 (char const *restrict s, idx_t n, mbstate_t *restrict ps)
+{
+  if (mb_cur_max == 1)
+    return 1;
+  size_t r = mbrtowc (NULL, s, n, ps);
+  if (0 < r && r < (size_t) {-2})
+    return r;
+  /* Treat a NUL byte or an encoding error as a single byte.  */
+  mbszero (ps);
+  return 1;
+}
 
 #define IS_MB_CHAR(ch, ps)                \
   (mb_cur_max == 1 ? 0 : is_mb_char (ch, ps))
@@ -298,3 +317,5 @@ extern void initialize_mbcs (void);
 #  define FALLTHROUGH __attribute__ ((__fallthrough__))
 # endif
 #endif
+
+_GL_INLINE_HEADER_END

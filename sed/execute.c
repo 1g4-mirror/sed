@@ -166,19 +166,7 @@ str_append (struct line *to, const char *string, idx_t length)
   if (mb_cur_max > 1 && !is_utf8)
     while (length)
       {
-        size_t n = MBRLEN (string, length, &to->mbstate);
-
-        /* Treat an invalid or incomplete sequence like a
-           single-byte character.  */
-        if (n == (size_t) -1 || n == (size_t) -2)
-          {
-            mbszero (&to->mbstate);
-            n = 1;
-          }
-
-        if (n == 0)
-          break;
-
+        size_t n = mbrlen1 (string, length, &to->mbstate);
         string += n;
         length -= n;
       }
@@ -205,8 +193,8 @@ str_append_modified (struct line *to, const char *string, idx_t length,
       wchar_t wc;
       size_t n = MBRTOWC (&wc, string, length, &from_stat);
 
-      /* Treat an invalid sequence like a single-byte character.  */
-      if (n == (size_t) -1)
+      /* Treat an invalid or null sequence like a single-byte character.  */
+      if (n == (size_t) {-1} || n == (size_t) {-2} || n == 0)
         {
           type &= ~(REPL_LOWERCASE_FIRST | REPL_UPPERCASE_FIRST);
           if (type == REPL_ASIS)
@@ -216,17 +204,10 @@ str_append_modified (struct line *to, const char *string, idx_t length,
             }
 
           str_append (to, string, 1);
-          mbszero (&to->mbstate);
+          mbszero (&from_stat);
           n = 1;
           string += n, length -= n;
           continue;
-        }
-
-      if (n == 0 || n == (size_t) -2)
-        {
-          /* L'\0' or an incomplete sequence: copy it manually.  */
-          str_append (to, string, length);
-          return;
         }
 
       string += n, length -= n;
@@ -262,7 +243,7 @@ str_append_modified (struct line *to, const char *string, idx_t length,
 
       /* Copy the new wide character to the end of the string. */
       n = WCRTOMB (to->active + to->length, wc, &to->mbstate);
-      if (n == -1 || n == -2)
+      if (n == (size_t) {-1} || n == (size_t) {-2})
         {
           fprintf (stderr, _("case conversion produced an invalid character"));
           abort ();
@@ -1195,12 +1176,7 @@ translate_mb (char *const *trans)
   for (idx = 0; idx < line.length;)
     {
       idx_t i;
-      size_t mbclen = MBRLEN (line.active + idx,
-                              line.length - idx, &mbstate);
-      /* An invalid sequence, or a truncated multibyte
-         character.  Treat it as a single-byte character.  */
-      if (mbclen == (size_t) -1 || mbclen == (size_t) -2 || mbclen == 0)
-        mbclen = 1;
+      size_t mbclen = mbrlen1 (line.active + idx, line.length - idx, &mbstate);
 
       /* 'i' indicate i-th translate pair.  */
       for (i = 0; trans[2*i] != NULL; i++)
