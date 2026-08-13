@@ -260,7 +260,7 @@ main (int argc, char **argv)
         lcmd_out_line_len = t-1;
     }
 
-  while ((opt = getopt_long (argc, argv, SHORTOPTS, longopts, NULL)) != EOF)
+  while ((opt = getopt_long (argc, argv, SHORTOPTS, longopts, NULL)) != -1)
     {
       switch (opt)
         {
