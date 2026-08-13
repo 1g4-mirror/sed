@@ -27,8 +27,6 @@
 #include "progname.h"
 #include "xalloc.h"
 
-#define YMAP_LENGTH		256 /*XXX shouldn't this be (UCHAR_MAX+1)?*/
-
 /* let's not confuse text editors that have only dumb bracket-matching... */
 #define OPEN_BRACKET	'['
 #define CLOSE_BRACKET	']'
@@ -1261,13 +1259,13 @@ compile_program (struct vector *vector)
             else
               {
                 unsigned char *translate =
-                  OB_MALLOC (&obs, YMAP_LENGTH, unsigned char);
+                  OB_MALLOC (&obs, UCHAR_MAX + 1, unsigned char);
                 unsigned char *ustring = (unsigned char *)src_buf;
 
                 if (len != dest_len)
                   bad_prog ("'y' command strings have different lengths");
 
-                for (len = 0; len < YMAP_LENGTH; len++)
+                for (len = 0; len < UCHAR_MAX + 1; len++)
                   translate[len] = len;
 
                 while (dest_len--)
