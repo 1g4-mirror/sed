@@ -185,8 +185,9 @@ struct sed_cmd {
     /* This is used for the y command. */
     union
     {
-      /* An array of UCHAR_MAX + 1 bytes.  sb[I] is the translation of I.  */
-      unsigned char *sb;
+      /* An array of UCHAR_MAX + 1 bytes.  sb[(unsigned char) {I}]
+         is the translation of I.  */
+      char *sb;
 
       /* The number of translation pairs, and an array of pairs.
          For 0 <= I < 2 * npairs, pair[I + 1] is the translation of pair[I]

@@ -41,9 +41,9 @@ struct prog_info {
      to the current character in the string, and 'prog.end' points
      to the end of the string.  This allows us to compile script
      strings that contain nulls. */
-  const unsigned char *base;
-  const unsigned char *cur;
-  const unsigned char *end;
+  char const *base;
+  char const *cur;
+  char const *end;
 };
 
 /* Information used to give out useful and informative error messages. */
@@ -149,7 +149,7 @@ bad_prog_notranslate (const char *why, ...)
 static int
 inchar (void)
 {
-  int ch = prog.cur < prog.end ? *prog.cur++ : EOF;
+  int ch = prog.cur < prog.end ? (unsigned char) {*prog.cur++} : EOF;
   if (ch == '\n')
     ++cur_input.line;
   return ch;
@@ -163,7 +163,7 @@ savchar (int ch)
     return;
   if (ch == '\n' && cur_input.line > 0)
     --cur_input.line;
-  if (prog.cur <= prog.base || *--prog.cur != ch)
+  if (prog.cur <= prog.base || (unsigned char) {*--prog.cur} != ch)
     panic ("Called savchar with unexpected pushback (%x)",
            (unsigned int) ch);
 }
@@ -1231,17 +1231,19 @@ compile_program (struct vector *vector)
               }
             else
               {
-                unsigned char *translate = obstack_alloc (&obs, UCHAR_MAX + 1);
-                unsigned char *ustring = (unsigned char *)src_buf;
+                char *translate = obstack_alloc (&obs, UCHAR_MAX + 1);
+                char *ustring = src_buf;
 
                 if (len != dest_len)
                   bad_prog ("'y' command strings have different lengths");
 
-                for (len = 0; len < UCHAR_MAX + 1; len++)
-                  translate[len] = len;
+                /* The default translation of a character is itself.
+                   Don't trap on debugging platforms if char is signed.  */
+                for (idx_t i = 0; i < UCHAR_MAX + 1; i++)
+                  translate[i] = i <= CHAR_MAX ? i : i - (UCHAR_MAX + 1);
 
                 while (dest_len--)
-                  translate[*ustring++] = (unsigned char)*dest_buf++;
+                  translate[(unsigned char) {*ustring++}] = *dest_buf++;
 
                 cur_cmd->x.translate.sb = translate;
               }
@@ -1398,7 +1400,7 @@ compile_string (struct vector *cur_program, char *str, idx_t len)
   static int string_expr_count;
   struct vector *ret;
 
-  prog.base = (unsigned char *)str;
+  prog.base = str;
   prog.cur = prog.base;
   prog.end = prog.cur + len;
 
@@ -1430,7 +1432,7 @@ compile_file (struct vector *cur_program, const char *cmdfile)
   if (!str)
     panic (_("couldn't read file %s: %s"), quotef (cmdfile), strerror (errno));
 
-  prog.base = (unsigned char *) str;
+  prog.base = str;
   prog.cur = prog.base;
   prog.end = prog.cur + len;
 

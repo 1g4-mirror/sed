@@ -1606,10 +1606,9 @@ execute_program (struct vector *vec, struct input *input)
                               cur_cmd->x.translate.mb.pair);
               else
                 {
-                  unsigned char *p, *e;
-                  p = (unsigned char *)line.active;
-                  for (e=p+line.length; p<e; ++p)
-                    *p = cur_cmd->x.translate.sb[*p];
+                  char *e = line.active + line.length;
+                  for (char *p = line.active; p < e; p++)
+                    *p = cur_cmd->x.translate.sb[(unsigned char) {*p}];
                 }
               if (debug)
                 debug_print_line (&line);

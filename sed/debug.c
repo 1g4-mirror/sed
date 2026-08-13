@@ -273,11 +273,11 @@ debug_print_translation (const struct sed_cmd *sc)
       /* unibyte translation */
       putchar ('/');
       for (idx_t i = 0; i < UCHAR_MAX + 1; ++i)
-        if (sc->x.translate.sb[i] != i)
+        if (i != (unsigned char) {sc->x.translate.sb[i]})
           putchar (i);
       putchar ('/');
       for (idx_t i = 0; i < UCHAR_MAX + 1; ++i)
-        if (sc->x.translate.sb[i] != i)
+        if (i != (unsigned char) {sc->x.translate.sb[i]})
           putchar (sc->x.translate.sb[i]);
       putchar ('/');
     }
