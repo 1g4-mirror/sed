@@ -67,7 +67,6 @@
 
 #undef ISPRINT
 #define ISPRINT(c) (ISASCII (c) && isprint (c))
-#define ISDIGIT(c) (ISASCII (c) && isdigit ((unsigned char) (c)))
 #define ISALNUM(c) (ISASCII (c) && isalnum (c))
 #define ISALPHA(c) (ISASCII (c) && isalpha (c))
 #define ISCNTRL(c) (ISASCII (c) && iscntrl (c))

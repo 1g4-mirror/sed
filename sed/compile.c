@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <obstack.h>
+#include "c-ctype.h"
 #include "read-file.h"
 #include "progname.h"
 #include "xalloc.h"
@@ -200,7 +201,7 @@ in_integer (int ch)
 {
   intmax_t num = 0;
 
-  while (ISDIGIT (ch))
+  while (c_isdigit (ch))
     {
       if (ckd_mul (&num, num, 10) || ckd_add (&num, num, ch - '0'))
         num = INTMAX_MAX;
@@ -472,7 +473,7 @@ match_slash (int slash, bool regex, bool s_command)
                 = ((extended_regexp_flags & REG_EXTENDED)
                    ? ".[\\()*+?{}|^$" : ".[\\*^$)({}");
               if (s_command && posixicity != POSIXLY_EXTENDED && ch != '&'
-                  && ch != '\\' && !ISDIGIT (ch) && ch != '\n' && ch != slash
+                  && ch != '\\' && !c_isdigit (ch) && ch != '\n' && ch != slash
                   && !strchr (special_chars, ch))
                 fprintf (stderr, _("%s: warning: using \"\\%c\" in the 's' "
                                    "command is not portable\n"),
@@ -682,7 +683,7 @@ setup_replacement (struct subst *sub, const char *text, idx_t length)
           if (p == text_end)
             ++tail->prefix_length;
 
-          else if (posixicity == POSIXLY_BASIC && !ISDIGIT (*p))
+          else if (posixicity == POSIXLY_BASIC && !c_isdigit (*p))
             {
               p[-1] = *p;
               ++tail->prefix_length;
@@ -848,7 +849,7 @@ compile_address (struct addr *addr, int ch)
             }
         }
     }
-  else if (ISDIGIT (ch))
+  else if (c_isdigit (ch))
     {
       addr->addr_number = in_integer (ch);
       addr->addr_type = ADDR_IS_NUM;
@@ -1077,7 +1078,7 @@ compile_program (struct vector *vector)
 
         case 'l':
           ch = in_nonblank ();
-          if (ISDIGIT (ch) && posixicity != POSIXLY_BASIC)
+          if (c_isdigit (ch) && posixicity != POSIXLY_BASIC)
             {
               cur_cmd->x.int_arg = in_integer (ch);
             }
