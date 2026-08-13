@@ -134,6 +134,7 @@
 /malloc/
 /malloca.c
 /malloca.h
+/mbrlen.c
 /mbrtoc32.c
 /mbrtowc-impl-utf8.h
 /mbrtowc-impl.h

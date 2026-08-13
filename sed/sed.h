@@ -289,7 +289,7 @@ mbrlen1 (char const *restrict s, idx_t n, mbstate_t *restrict ps)
 {
   if (mb_cur_max == 1)
     return 1;
-  size_t r = mbrtowc (NULL, s, n, ps);
+  size_t r = mbrlen (s, n, ps);
   if (0 < r && r < (size_t) {-2})
     return r;
   /* Treat a NUL byte or an encoding error as a single byte.  */

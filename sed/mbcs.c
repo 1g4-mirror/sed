@@ -39,7 +39,7 @@ is_mb_char (int ch, mbstate_t *cur_stat)
 {
   const char c = ch ;
   const int mb_pending = !mbsinit (cur_stat);
-  size_t result = mbrtowc (NULL, &c, 1, cur_stat);
+  size_t result = mbrlen (&c, 1, cur_stat);
 
   switch (result)
     {
