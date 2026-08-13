@@ -340,7 +340,7 @@ get_openfile (struct output **file_ptrs, const char *mode, int fail)
 
   if (!p)
     {
-      p = OB_MALLOC (&obs, 1, struct output);
+      p = obstack_alloc (&obs, sizeof *p);
       p->name = xstrdup (file_name);
       p->fp = ck_fopen (p->name, mode, fail);
       p->missing_newline = false;
@@ -626,7 +626,7 @@ static struct sed_label *
 setup_label (struct sed_label *list, idx_t idx, char *name,
              const struct error_info *err_info)
 {
-  struct sed_label *ret = OB_MALLOC (&obs, 1, struct sed_label);
+  struct sed_label *ret = obstack_alloc (&obs, sizeof *ret);
   ret->v_index = idx;
   ret->name = name;
   if (err_info)
@@ -656,7 +656,7 @@ release_label (struct sed_label *list_head)
 static struct replacement *
 new_replacement (char *text, idx_t length, enum replacement_types type)
 {
-  struct replacement *r = OB_MALLOC (&obs, 1, struct replacement);
+  struct replacement *r = obstack_alloc (&obs, sizeof *r);
 
   r->prefix = text;
   r->prefix_length = length;
@@ -678,7 +678,7 @@ setup_replacement (struct subst *sub, const char *text, idx_t length)
   struct replacement *tail;
 
   sub->max_id = 0;
-  base = MEMDUP (text, length, char);
+  base = xmemdup (text, length);
   length = normalize_text (base, length, TEXT_REPLACEMENT);
 
   IF_LINT (sub->replacement_buffer = base);
@@ -817,7 +817,7 @@ read_text (struct text_buf *buf, int leadin_ch)
     buf = old_text_buf;
   buf->text_length = normalize_text (get_buffer (pending_text),
                                      size_buffer (pending_text), TEXT_BUFFER);
-  buf->text = MEMDUP (get_buffer (pending_text), buf->text_length, char);
+  buf->text = xmemdup (get_buffer (pending_text), buf->text_length);
   free_buffer (pending_text);
   pending_text = NULL;
 }
@@ -944,14 +944,14 @@ compile_program (struct vector *vector)
               || a.addr_type == ADDR_IS_STEP_MOD)
             bad_prog ("invalid usage of +N or ~N as first address");
 
-          cur_cmd->a1 = MEMDUP (&a, 1, struct addr);
+          cur_cmd->a1 = xmemdup (&a, sizeof a);
           ch = in_nonblank ();
           if (ch == ',')
             {
               if (!compile_address (&a, in_nonblank ()))
                 bad_prog ("unexpected ','");
 
-              cur_cmd->a2 = MEMDUP (&a, 1, struct addr);
+              cur_cmd->a2 = xmemdup (&a, sizeof a);
               ch = in_nonblank ();
             }
 
@@ -1171,7 +1171,8 @@ compile_program (struct vector *vector)
             if ( !(b2 = match_slash (slash, false, true)) )
               bad_prog ("unterminated 's' command");
 
-            cur_cmd->x.cmd_subst = OB_MALLOC (&obs, 1, struct subst);
+            cur_cmd->x.cmd_subst
+              = obstack_alloc (&obs, sizeof *cur_cmd->x.cmd_subst);
             setup_replacement (cur_cmd->x.cmd_subst,
                                get_buffer (b2), size_buffer (b2));
             free_buffer (b2);
@@ -1258,8 +1259,7 @@ compile_program (struct vector *vector)
               }
             else
               {
-                unsigned char *translate =
-                  OB_MALLOC (&obs, UCHAR_MAX + 1, unsigned char);
+                unsigned char *translate = obstack_alloc (&obs, UCHAR_MAX + 1);
                 unsigned char *ustring = (unsigned char *)src_buf;
 
                 if (len != dest_len)
@@ -1519,8 +1519,8 @@ check_final_program (struct vector *program)
     {
       old_text_buf->text_length = size_buffer (pending_text);
       if (old_text_buf->text_length)
-        old_text_buf->text = MEMDUP (get_buffer (pending_text),
-                                     old_text_buf->text_length, char);
+        old_text_buf->text = xmemdup (get_buffer (pending_text),
+                                      old_text_buf->text_length);
       free_buffer (pending_text);
       pending_text = NULL;
     }

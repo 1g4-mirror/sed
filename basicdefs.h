@@ -28,10 +28,6 @@
 #include "idx.h"
 #include "xalloc.h"
 
-/* some basic definitions to avoid undue promulgating of  ugliness */
-#define MEMDUP(x,n,t)	 ((t *)xmemdup((x),(n)*sizeof(t)))
-#define OB_MALLOC(o,n,t) ((t *)obstack_alloc(o,(n)*sizeof(t)))
-
 #define obstack_chunk_alloc  xzalloc
 #define obstack_chunk_free   free
 
