@@ -234,30 +234,28 @@ debug_print_subst (const struct subst *s)
 static void
 debug_print_translation (const struct sed_cmd *sc)
 {
-  idx_t i;
-
   if (mb_cur_max > 1)
     {
       /* multibyte translation */
       putchar ('/');
-      for (i = 0; sc->x.translatemb[2 * i] != NULL; i++)
-        fputs (sc->x.translatemb[2 * i], stdout);
+      for (idx_t i = 0; sc->x.translate.mb[2 * i] != NULL; i++)
+        fputs (sc->x.translate.mb[2 * i], stdout);
       putchar ('/');
-      for (i = 0; sc->x.translatemb[2 * i] != NULL; i++)
-        fputs (sc->x.translatemb[2 * i + 1], stdout);
+      for (idx_t i = 0; sc->x.translate.mb[2 * i] != NULL; i++)
+        fputs (sc->x.translate.mb[2 * i + 1], stdout);
       putchar ('/');
     }
   else
     {
       /* unibyte translation */
       putchar ('/');
-      for (i = 0; i < 256; ++i)
-        if (sc->x.translate[i] != (unsigned char) i)
-          putchar ((unsigned char) i);
+      for (idx_t i = 0; i < UCHAR_MAX + 1; ++i)
+        if (sc->x.translate.sb[i] != i)
+          putchar (i);
       putchar ('/');
-      for (i = 0; i < 256; ++i)
-        if (sc->x.translate[i] != (unsigned char) i)
-          putchar (sc->x.translate[i]);
+      for (idx_t i = 0; i < UCHAR_MAX + 1; ++i)
+        if (sc->x.translate.sb[i] != i)
+          putchar (sc->x.translate.sb[i]);
       putchar ('/');
     }
 }

@@ -1578,13 +1578,13 @@ execute_program (struct vector *vec, struct input *input)
 
             case 'y':
               if (mb_cur_max > 1)
-                translate_mb (cur_cmd->x.translatemb);
+                translate_mb (cur_cmd->x.translate.mb);
               else
                 {
                   unsigned char *p, *e;
                   p = (unsigned char *)line.active;
                   for (e=p+line.length; p<e; ++p)
-                    *p = cur_cmd->x.translate[*p];
+                    *p = cur_cmd->x.translate.sb[*p];
                 }
               if (debug)
                 debug_print_line (&line);

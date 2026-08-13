@@ -1229,7 +1229,7 @@ compile_program (struct vector *vector)
                      dest(i) : pointer to i-th destination character.
                      NULL : terminator */
                 trans_pairs = XNMALLOC (2 * src_char_num + 1, char *);
-                cur_cmd->x.translatemb = trans_pairs;
+                cur_cmd->x.translate.mb = trans_pairs;
                 for (i = 0; i < src_char_num; i++)
                   {
                     if (idx >= dest_len)
@@ -1271,7 +1271,7 @@ compile_program (struct vector *vector)
                 while (dest_len--)
                   translate[*ustring++] = (unsigned char)*dest_buf++;
 
-                cur_cmd->x.translate = translate;
+                cur_cmd->x.translate.sb = translate;
               }
 
             read_end_of_cmd ();

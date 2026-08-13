@@ -183,8 +183,11 @@ struct sed_cmd {
     struct output *inf;
 
     /* This is used for the y command. */
-    unsigned char *translate;
-    char **translatemb;
+    union
+    {
+      unsigned char *sb;
+      char **mb;
+    } translate;
 
     /* This is used for the ':' command (debug only).  */
     char* label_name;
