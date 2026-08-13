@@ -70,10 +70,13 @@
 /file-has-acl.c
 /filename.h
 /flexmember.h
+/fopen.c
 /free.c
 /fseterr.c
 /fseterr.h
 /fstat.c
+/ftell.c
+/ftello.c
 /fwriting.c
 /fwriting.h
 /get-permissions.c
@@ -129,6 +132,7 @@
 /localeconv.c
 /localeinfo.c
 /localeinfo.h
+/lseek.c
 /lstat.c
 /malloc.c
 /malloc/
@@ -150,6 +154,7 @@
 /memeq.c
 /mempcpy.c
 /memrchr.c
+/memset_explicit.c
 /min-eloop-threshold.h
 /minmax.h
 /mkdir.c
@@ -177,6 +182,8 @@
 /quotearg.h
 /rawmemchr.c
 /rawmemchr.valgrind
+/read-file.c
+/read-file.h
 /readlink.c
 /realloc.c
 /reallocarray.c

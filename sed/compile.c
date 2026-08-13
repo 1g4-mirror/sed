@@ -17,6 +17,7 @@
 /* compile.c: translate sed source into internal form */
 
 #include "sed.h"
+#include <errno.h>
 #include <stdckdint.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -24,6 +25,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <obstack.h>
+#include "read-file.h"
 #include "progname.h"
 #include "xalloc.h"
 
@@ -34,19 +36,13 @@
 #define CLOSE_BRACE	'}'
 
 struct prog_info {
-  /* When we're reading a script command from a string, 'prog.base'
-     points to the first character in the string, 'prog.cur' points
+  /* 'prog.base' points to the first character in the string, 'prog.cur' points
      to the current character in the string, and 'prog.end' points
      to the end of the string.  This allows us to compile script
      strings that contain nulls. */
   const unsigned char *base;
   const unsigned char *cur;
   const unsigned char *end;
-
-  /* This is the current script file.  If it is NULL, we are reading
-     from a string stored at 'prog.cur' instead.  If both 'prog.file'
-     and 'prog.cur' are NULL, we're in trouble! */
-  FILE *file;
 };
 
 /* Information used to give out useful and informative error messages. */
@@ -152,18 +148,7 @@ bad_prog_notranslate (const char *why, ...)
 static int
 inchar (void)
 {
-  int ch = EOF;
-
-  if (prog.cur)
-    {
-      if (prog.cur < prog.end)
-        ch = *prog.cur++;
-    }
-  else if (prog.file)
-    {
-      if (!feof (prog.file))
-        ch = getc (prog.file);
-    }
+  int ch = prog.cur < prog.end ? *prog.cur++ : EOF;
   if (ch == '\n')
     ++cur_input.line;
   return ch;
@@ -177,14 +162,9 @@ savchar (int ch)
     return;
   if (ch == '\n' && cur_input.line > 0)
     --cur_input.line;
-  if (prog.cur)
-    {
-      if (prog.cur <= prog.base || *--prog.cur != ch)
-        panic ("Called savchar with unexpected pushback (%x)",
-               (unsigned int) ch);
-    }
-  else
-    ungetc (ch, prog.file);
+  if (prog.cur <= prog.base || *--prog.cur != ch)
+    panic ("Called savchar with unexpected pushback (%x)",
+           (unsigned int) ch);
 }
 
 /* Read the next non-blank character from the program.  */
@@ -994,8 +974,7 @@ compile_program (struct vector *vector)
             bad_prog ("comments don't accept any addresses");
           ch = inchar ();
           if (ch=='n' && first_script && cur_input.line < 2)
-            if (   (prog.base && prog.cur==2+prog.base)
-                || (prog.file && !prog.base && 2==ftell (prog.file)))
+            if (prog.cur - prog.base == 2)
               no_default_output = true;
           while (ch != EOF && ch != '\n')
             ch = inchar ();
@@ -1418,7 +1397,6 @@ compile_string (struct vector *cur_program, char *str, idx_t len)
   static int string_expr_count;
   struct vector *ret;
 
-  prog.file = NULL;
   prog.base = (unsigned char *)str;
   prog.cur = prog.base;
   prog.end = prog.cur + len;
@@ -1443,25 +1421,27 @@ struct vector *
 compile_file (struct vector *cur_program, const char *cmdfile)
 {
   struct vector *ret;
+  size_t len;
+  char *str = (streq (cmdfile, "-")
+               ? fread_file (stdin, 0, &len)
+               : read_file (cmdfile, 0, &len));
 
-  prog.file = stdin;
-  if (cmdfile[0] != '-' || cmdfile[1] != '\0')
-    {
-#ifdef HAVE_FOPEN_RT
-      prog.file = ck_fopen (cmdfile, "rt", true);
-#else
-      prog.file = ck_fopen (cmdfile, "r", true);
-#endif
-    }
+  if (!str)
+    panic (_("couldn't read file %s: %s"), quotef (cmdfile), strerror (errno));
+
+  prog.base = (unsigned char *) str;
+  prog.cur = prog.base;
+  prog.end = prog.cur + len;
 
   cur_input.line = 1;
   cur_input.name = cmdfile;
   cur_input.string_expr_count = 0;
 
   ret = compile_program (cur_program);
-  if (prog.file != stdin)
-    ck_fclose (prog.file);
-  prog.file = NULL;
+  free (str);
+  prog.base = NULL;
+  prog.cur = NULL;
+  prog.end = NULL;
 
   first_script = false;
   return ret;
