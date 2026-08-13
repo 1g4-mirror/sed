@@ -190,11 +190,11 @@ str_append_modified (struct line *to, const char *string, idx_t length,
   from_stat = to->mbstate;
   while (length)
     {
-      wchar_t wc;
-      size_t n = MBRTOWC (&wc, string, length, &from_stat);
+      int wc;
+      idx_t n = mbrtowc1 (&wc, string, length, &from_stat);
 
-      /* Treat an invalid or null sequence like a single-byte character.  */
-      if (n == (size_t) {-1} || n == (size_t) {-2} || n == 0)
+      /* Treat an invalid sequence like a single-byte character.  */
+      if (wc < 0)
         {
           type &= ~(REPL_LOWERCASE_FIRST | REPL_UPPERCASE_FIRST);
           if (type == REPL_ASIS)
@@ -224,14 +224,14 @@ str_append_modified (struct line *to, const char *string, idx_t length,
           if (type == REPL_ASIS)
             {
               /* Copy the new wide character to the end of the string. */
-              n = WCRTOMB (to->active + to->length, wc, &to->mbstate);
-              if (n == (size_t) -1 || n == (size_t) -2)
+              size_t w = wcrtomb (to->active + to->length, wc, &to->mbstate);
+              if (w == (size_t) {-1})
                 {
                   fprintf (stderr,
                            _("case conversion produced an invalid character"));
                   abort ();
                 }
-              to->length += n;
+              to->length += w;
               str_append (to, string, length);
               return;
             }
@@ -242,13 +242,13 @@ str_append_modified (struct line *to, const char *string, idx_t length,
         wc = towlower (wc);
 
       /* Copy the new wide character to the end of the string. */
-      n = WCRTOMB (to->active + to->length, wc, &to->mbstate);
-      if (n == (size_t) {-1} || n == (size_t) {-2})
+      size_t w = wcrtomb (to->active + to->length, wc, &to->mbstate);
+      if (w == (size_t) {-1})
         {
           fprintf (stderr, _("case conversion produced an invalid character"));
           abort ();
         }
-      to->length += n;
+      to->length += w;
     }
 }
 
@@ -1169,23 +1169,34 @@ do_subst (struct subst *sub)
 /* Translate the global input LINE via TRANS.
    This function handles the multi-byte case.  */
 static void
-translate_mb (char *const *trans)
+translate_mb (idx_t npairs, int *pair)
 {
   idx_t idx; /* index in the input line.  */
   mbstate_t mbstate; mbszero (&mbstate);
+  mbstate_t trstate; mbszero (&trstate);
   for (idx = 0; idx < line.length;)
     {
-      idx_t i;
-      size_t mbclen = mbrlen1 (line.active + idx, line.length - idx, &mbstate);
+      int iwc;
+      idx_t mbclen = mbrtowc1 (&iwc, line.active + idx, line.length - idx,
+                               &mbstate);
 
       /* 'i' indicate i-th translate pair.  */
-      for (i = 0; trans[2*i] != NULL; i++)
+      for (idx_t i = 0; i < npairs; i++)
         {
-          if (STREQ_LEN (line.active + idx, trans[2*i], mbclen))
+          if (pair[2 * i] == iwc)
             {
               bool move_remain_buffer = false;
-              const char *tr = trans[2*i+1];
-              idx_t trans_len = *tr == '\0' ? 1 : strlen (tr);
+              int tr = pair[2 * i + 1];
+              char mbuf[MB_LEN_MAX];
+              idx_t trans_len;
+              if (tr < 0)
+                {
+                  mbuf[0] = -tr;
+                  mbszero (&trstate);
+                  trans_len = 1;
+                }
+              else
+                trans_len = wcrtomb (mbuf, tr, &trstate);
 
               if (mbclen < trans_len)
                 {
@@ -1211,8 +1222,7 @@ translate_mb (char *const *trans)
                   line.length += move_offset;
                   idx += move_offset;
                 }
-              memcpy (line.active + prev_idx, trans[2*i+1],
-                     trans_len);
+              memcpy (line.active + prev_idx, mbuf, trans_len);
               break;
             }
         }
@@ -1578,7 +1588,8 @@ execute_program (struct vector *vec, struct input *input)
 
             case 'y':
               if (mb_cur_max > 1)
-                translate_mb (cur_cmd->x.translate.mb);
+                translate_mb (cur_cmd->x.translate.mb.npairs,
+                              cur_cmd->x.translate.mb.pair);
               else
                 {
                   unsigned char *p, *e;

@@ -228,11 +228,10 @@ sc_gitignore_missing:
 		'entries to lib/.gitignore' >&2; exit 1; } || :
 
 
-# Similar to the gnulib maint.mk rule for sc_prohibit_strcmp
-# Use STREQ_LEN rather than comparing strncmp == 0, or != 0.
+# Similar to the gnulib maint.mk rule for sc_prohibit_strcmp.
 sc_prohibit_strncmp:
 	@prohibit='^[^#].*str''ncmp *\('				\
-	halt='use STREQ_LEN instead of str''ncmp'			\
+	halt='use memeq instead of str''ncmp'				\
 	  $(_sc_search_regexp)
 
 # Ensure that tests don't include a redundant fail=0.

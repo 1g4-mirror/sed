@@ -232,17 +232,35 @@ debug_print_subst (const struct subst *s)
 }
 
 static void
+debug_print_mb (int ch, mbstate_t *ps)
+{
+  if (ch < 0)
+    {
+      fputc (-ch, stdout);
+      mbszero (ps);
+    }
+  else
+    {
+      char buf[MB_LEN_MAX];
+      size_t s = wcrtomb (buf, ch, ps);
+      fwrite (buf, 1, s, stdout);
+    }
+}
+
+static void
 debug_print_translation (const struct sed_cmd *sc)
 {
   if (mb_cur_max > 1)
     {
       /* multibyte translation */
       putchar ('/');
-      for (idx_t i = 0; sc->x.translate.mb[2 * i] != NULL; i++)
-        fputs (sc->x.translate.mb[2 * i], stdout);
+      mbstate_t mbs; mbszero (&mbs);
+      for (idx_t i = 0; i < sc->x.translate.mb.npairs; i++)
+        debug_print_mb (sc->x.translate.mb.pair[2 * i], &mbs);
       putchar ('/');
-      for (idx_t i = 0; sc->x.translate.mb[2 * i] != NULL; i++)
-        fputs (sc->x.translate.mb[2 * i + 1], stdout);
+      mbszero (&mbs);
+      for (idx_t i = 0; i < sc->x.translate.mb.npairs; i++)
+        debug_print_mb (sc->x.translate.mb.pair[2 * i + 1], &mbs);
       putchar ('/');
     }
   else

@@ -1207,55 +1207,47 @@ compile_program (struct vector *vector)
 
             if (mb_cur_max > 1)
               {
-                idx_t i, j, idx, src_char_num;
-                idx_t *src_lens = XNMALLOC (len, idx_t);
-                char **trans_pairs;
                 mbstate_t cur_stat; mbszero (&cur_stat);
 
                 /* Enumerate how many character the source buffer has.  */
-                for (i = 0, j = 0; i < len;)
-                  {
-                    size_t mbclen = mbrlen1 (src_buf + i, len - i, &cur_stat);
-                    src_lens[j++] = mbclen;
-                    i += mbclen;
-                  }
-                src_char_num = j;
+                idx_t src_char_num = 0;
+                for (idx_t i = 0; i < len;
+                     i += mbrlen1 (src_buf + i, len - i, &cur_stat))
+                  src_char_num++;
 
+                mbszero (&cur_stat);
                 mbstate_t tr_stat; mbszero (&tr_stat);
-                idx = 0;
+                idx_t idx = 0;
 
-                /* trans_pairs = {src(0), dest(0), src(1), dest(1), ..., NULL}
-                     src(i) : pointer to i-th source character.
-                     dest(i) : pointer to i-th destination character.
-                     NULL : terminator */
-                trans_pairs = XNMALLOC (2 * src_char_num + 1, char *);
-                cur_cmd->x.translate.mb = trans_pairs;
-                for (i = 0; i < src_char_num; i++)
+                /* trans_pairs = {src(0), dest(0), src(1), dest(1), ... }
+                     src(i) : i-th source character.
+                     dest(i) : i-th destination character.  */
+                int *trans_pairs = xnmalloc (src_char_num,
+                                             2 * sizeof *trans_pairs);
+                cur_cmd->x.translate.mb.npairs = src_char_num;
+                cur_cmd->x.translate.mb.pair = trans_pairs;
+                for (idx_t i = 0; i < src_char_num; i++)
                   {
                     if (idx >= dest_len)
                       bad_prog ("'y' command strings have different lengths");
 
                     /* Set the i-th source character.  */
-                    trans_pairs[2 * i] = XNMALLOC (src_lens[i] + 1, char);
-                    memcpy (trans_pairs[2 * i], src_buf, src_lens[i]);
-                    trans_pairs[2 * i][src_lens[i]] = '\0';
-                    src_buf += src_lens[i]; /* Forward to next character.  */
+                    int wc;
+                    idx_t mbclen = mbrtowc1 (&wc, src_buf, len, &cur_stat);
+                    trans_pairs[2 * i] = wc;
+                    src_buf += mbclen; /* Forward to next character.  */
+                    len -= mbclen;
 
                     /* Fetch the i-th destination character.  */
-                    size_t mbclen = mbrlen1 (dest_buf + idx, dest_len - idx,
-                                             &tr_stat);
+                    mbclen = mbrtowc1 (&wc, dest_buf + idx, dest_len - idx,
+                                       &tr_stat);
 
                     /* Set the i-th destination character.  */
-                    trans_pairs[2 * i + 1] = XNMALLOC (mbclen + 1, char);
-                    memcpy (trans_pairs[2 * i + 1], dest_buf + idx, mbclen);
-                    trans_pairs[2 * i + 1][mbclen] = '\0';
+                    trans_pairs[2 * i + 1] = wc;
                     idx += mbclen; /* Forward to next character.  */
                   }
-                trans_pairs[2 * i] = NULL;
                 if (idx != dest_len)
                   bad_prog ("'y' command strings have different lengths");
-
-                IF_LINT (free (src_lens));
               }
             else
               {
