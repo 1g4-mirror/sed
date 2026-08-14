@@ -1524,6 +1524,11 @@ As a @value{SSED} extension, the @code{r} command accepts a zero address,
 inserting a file @emph{before} the first line of the input
 @pxref{Adding a header to multiple files}.
 
+Although this command is a file-oriented counterpart to the @code{a} command,
+which appends lines at the end of the current cycle,
+there is no file-oriented counterpart to the @code{i} command,
+which inserts lines before rather than appending lines after.
+
 @item w @var{filename}
 @findex w (write file) command
 @cindex Write to a file
