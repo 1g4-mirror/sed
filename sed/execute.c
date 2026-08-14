@@ -53,7 +53,6 @@ struct line {
                         /* 0 <= LENGTH <= ALLOC, and the malloc
                            size is ACTIVE - TEXT + ALLOC + DFA_SLOP.  */
   bool chomped;		/* Was a trailing newline dropped? */
-  mbstate_t mbstate;
 };
 
 /* A queue of text to write out at the end of a cycle
@@ -162,22 +161,12 @@ str_append (struct line *to, const char *string, idx_t length)
   idx_t new_length = to->length + length;
   memcpy (to->active + to->length, string, length);
   to->length = new_length;
-
-  if (mb_cur_max > 1 && !is_utf8)
-    while (length)
-      {
-        size_t n = mbrlen1 (string, length, &to->mbstate);
-        string += n;
-        length -= n;
-      }
 }
 
 static void
 str_append_modified (struct line *to, const char *string, idx_t length,
                      enum replacement_types type)
 {
-  mbstate_t from_stat;
-
   if (type == REPL_ASIS)
     {
       str_append (to, string, length);
@@ -187,112 +176,83 @@ str_append_modified (struct line *to, const char *string, idx_t length,
   if (to->alloc - to->length < length * mb_cur_max)
     resize_line (to, length * mb_cur_max);
 
-  from_stat = to->mbstate;
-  while (length)
+  char const *stringlim = string + length;
+  while (string < stringlim)
     {
-      int wc;
-      idx_t n = mbrtowc1 (&wc, string, length, &from_stat);
+      mcel_t g = mcel_scan (string, stringlim);
 
       /* Treat an invalid sequence like a single-byte character.  */
-      if (wc < 0)
+      if (g.err)
         {
           type &= ~(REPL_LOWERCASE_FIRST | REPL_UPPERCASE_FIRST);
           if (type == REPL_ASIS)
             {
-              str_append (to, string, length);
+              str_append (to, string, stringlim - string);
               return;
             }
 
           str_append (to, string, 1);
-          mbszero (&from_stat);
-          n = 1;
-          string += n, length -= n;
+          string++;
           continue;
         }
 
-      string += n, length -= n;
+      string += g.len;
 
       /* Convert the first character specially... */
       if (type & (REPL_UPPERCASE_FIRST | REPL_LOWERCASE_FIRST))
         {
           if (type & REPL_UPPERCASE_FIRST)
-            wc = towupper (wc);
+            g.ch = c32toupper (g.ch);
           else
-            wc = towlower (wc);
+            g.ch = c32tolower (g.ch);
 
           type &= ~(REPL_LOWERCASE_FIRST | REPL_UPPERCASE_FIRST);
           if (type == REPL_ASIS)
             {
               /* Copy the new wide character to the end of the string. */
-              size_t w = wcrtomb (to->active + to->length, wc, &to->mbstate);
-              if (w == (size_t) {-1})
-                {
-                  fprintf (stderr,
-                           _("case conversion produced an invalid character"));
-                  abort ();
-                }
-              to->length += w;
-              str_append (to, string, length);
+              to->length += c32rtomb1 (to->active + to->length, g.ch);
+              str_append (to, string, stringlim - string);
               return;
             }
         }
       else if (type & REPL_UPPERCASE)
-        wc = towupper (wc);
+        g.ch = c32toupper (g.ch);
       else
-        wc = towlower (wc);
+        g.ch = c32tolower (g.ch);
 
       /* Copy the new wide character to the end of the string. */
-      size_t w = wcrtomb (to->active + to->length, wc, &to->mbstate);
-      if (w == (size_t) {-1})
-        {
-          fprintf (stderr, _("case conversion produced an invalid character"));
-          abort ();
-        }
-      to->length += w;
+      to->length += c32rtomb1 (to->active + to->length, g.ch);
     }
 }
 
-/* Initialize a "struct line" buffer.  Copy multibyte state from 'state'
-   if not null.  */
+/* Initialize a "struct line" buffer.  */
 static void
-line_init (struct line *buf, struct line *state, idx_t initial_size)
+line_init (struct line *buf, idx_t initial_size)
 {
   buf->text = XNMALLOC (initial_size + DFA_SLOP, char);
   buf->active = buf->text;
   buf->alloc = initial_size;
   buf->length = 0;
   buf->chomped = true;
-  if (state)
-    buf->mbstate = state->mbstate;
-  else
-    mbszero (&buf->mbstate);
 }
 
-/* Reset a "struct line" buffer to length zero.  Copy multibyte state from
-   'state' if not null.  */
+/* Reset a "struct line" buffer to length zero.  */
 static void
-line_reset (struct line *buf, struct line *state)
+line_reset (struct line *buf)
 {
   if (buf->alloc == 0)
     {
       free (buf->text);
-      line_init (buf, state, INITIAL_BUFFER_SIZE);
+      line_init (buf, INITIAL_BUFFER_SIZE);
     }
   else
-    {
-      buf->length = 0;
-      if (state)
-        buf->mbstate = state->mbstate;
-      else
-        mbszero (&buf->mbstate);
-    }
+    buf->length = 0;
 }
 
 /* Copy the contents of the line 'from' into the line 'to'.
-   This destroys the old contents of 'to'.
-   Copy the multibyte state if 'state' is true. */
+   This destroys the old contents of 'to'.  */
 static void
-line_copy (struct line *from, struct line *to, int state)
+line_copy (struct line *from, struct line *to)
 {
   /* Remove the inactive portion in the destination buffer. */
   to->alloc += to->active - to->text;
@@ -311,43 +271,23 @@ line_copy (struct line *from, struct line *to, int state)
   to->length = from->length;
   to->chomped = from->chomped;
   memcpy (to->active, from->active, from->length);
-
-  if (state)
-    to->mbstate = from->mbstate;
 }
 
-/* Append the contents of the line 'from' to the line 'to'.
-   Copy the multibyte state if 'state' is true. */
+/* Append the contents of the line 'from' to the line 'to'.  */
 static void
-line_append (struct line *from, struct line *to, int state)
+line_append (struct line *from, struct line *to)
 {
   str_append (to, &buffer_delimiter, 1);
   str_append (to, from->active, from->length);
   to->chomped = from->chomped;
-
-  if (state)
-    to->mbstate = from->mbstate;
 }
 
-/* Exchange two "struct line" buffers.
-   Copy the multibyte state if 'state' is true. */
 static void
-line_exchange (struct line *a, struct line *b, int state)
+line_exchange (struct line *a, struct line *b)
 {
-  if (state)
-    {
-      struct line t = *a;
-      *a = *b;
-      *b = t;
-    }
-  else
-    {
-      char *t1 = a->text   ; a->text    = b->text   ; b->text    = t1;
-      char *t2 = a->active ; a->active  = b->active ; b->active  = t2;
-      idx_t t3 = a->length ; a->length  = b->length ; b->length  = t3;
-      idx_t t4 = a->alloc  ; a->alloc   = b->alloc  ; b->alloc   = t4;
-      bool  t5 = a->chomped; a->chomped = b->chomped; b->chomped = t5;
-    }
+  struct line t = *a;
+  *a = *b;
+  *b = t;
 }
 
 /* dummy function to simplify read_pattern_space() */
@@ -894,29 +834,25 @@ match_address_p (struct sed_cmd *cmd, struct input *input)
 static void
 do_list (intmax_t line_len)
 {
-  char *p = line.active;
-  idx_t len = line.length;
   idx_t width = 0;
   FILE *fp = output_file.fp;
-  mbstate_t mbs; mbszero (&mbs);
 
   output_missing_newline (&output_file);
-  while (len)
+
+  mcel_t g;
+  char *plim = line.active + line.length;
+  for (char *p = line.active; p < plim; p += g.len)
     {
+      g = mcel_scan (p, plim);
       char obuf[(sizeof "\\377" - 1) * MB_LEN_MAX];
       char *o = obuf;
-      int ch;
-      idx_t chlen = mbrtowc1 (&ch, p, len, &mbs);
-      if (0 <= ch && iswprint (ch))
-        {
-          o = mempcpy (o, p, chlen);
-          if (ch == '\\')
-            *o++ = '\\';
-        }
+      *o = '\\';
+      if (c32isprint (g.ch))
+        o = mempcpy (o + (g.ch == '\\'), p, g.len);
       else
         {
-          *o++ = '\\';
-          switch (ch) {
+          o++;
+          switch (g.ch) {
             case '\a': *o++ = 'a'; break;
             case '\b': *o++ = 'b'; break;
             case '\f': *o++ = 'f'; break;
@@ -925,7 +861,7 @@ do_list (intmax_t line_len)
             case '\t': *o++ = 't'; break;
             case '\v': *o++ = 'v'; break;
             default:
-              for (idx_t i = 0; i < chlen; i++)
+              for (idx_t i = 0; i < g.len; i++)
                 {
                   *o = '\\';
                   o += !!i;
@@ -936,8 +872,6 @@ do_list (intmax_t line_len)
               break;
             }
         }
-      p += chlen;
-      len -= chlen;
 
       idx_t olen = o - obuf;
       if (0 < line_len && line_len - olen <= width) {
@@ -1005,7 +939,7 @@ do_subst (struct subst *sub)
 
   static struct re_registers regs;
 
-  line_reset (&s_accum, &line);
+  line_reset (&s_accum);
 
   /* The first part of the loop optimizes s/xxx// when xxx is at the
      start, and s/xxx$// */
@@ -1119,9 +1053,7 @@ do_subst (struct subst *sub)
     str_append (&s_accum, line.active + start, line.length-start);
   s_accum.chomped = line.chomped;
 
-  /* Exchange line and s_accum.  This can be much cheaper
-     than copying s_accum.active into line.text (for huge lines). */
-  line_exchange (&line, &s_accum, false);
+  line_exchange (&line, &s_accum);
 
   /* Finish up. */
   if (count < sub->numb)
@@ -1135,7 +1067,7 @@ do_subst (struct subst *sub)
     {
 #ifdef HAVE_POPEN
       FILE *pipe_fp;
-      line_reset (&s_accum, NULL);
+      line_reset (&s_accum);
 
       str_append (&line, "", 1);
       pipe_fp = popen (line.active, "r");
@@ -1152,10 +1084,7 @@ do_subst (struct subst *sub)
 
           pclose (pipe_fp);
 
-          /* Exchange line and s_accum.  This can be much cheaper than copying
-             s_accum.active into line.text (for huge lines).  See comment above
-             for 'g' as to while the third argument is incorrect anyway.  */
-          line_exchange (&line, &s_accum, true);
+          line_exchange (&line, &s_accum);
           if (line.length
               && line.active[line.length - 1] == buffer_delimiter)
             line.length--;
@@ -1178,19 +1107,16 @@ do_subst (struct subst *sub)
 static void
 translate_mb (idx_t npairs, int *pair)
 {
-  idx_t idx; /* index in the input line.  */
-  mbstate_t mbstate; mbszero (&mbstate);
-  mbstate_t trstate; mbszero (&trstate);
-  for (idx = 0; idx < line.length;)
+  mcel_t g;
+  for (idx_t idx = 0; idx < line.length; idx += g.len)
     {
-      int iwc;
-      idx_t mbclen = mbrtowc1 (&iwc, line.active + idx, line.length - idx,
-                               &mbstate);
+      g = mcel_scan (line.active + idx, line.active + line.length);
+      int ch = g.err ? -g.err : g.ch;
 
       /* 'i' indicate i-th translate pair.  */
       for (idx_t i = 0; i < npairs; i++)
         {
-          if (pair[2 * i] == iwc)
+          if (pair[2 * i] == ch)
             {
               bool move_remain_buffer = false;
               int tr = pair[2 * i + 1];
@@ -1199,20 +1125,19 @@ translate_mb (idx_t npairs, int *pair)
               if (tr < 0)
                 {
                   mbuf[0] = -tr;
-                  mbszero (&trstate);
                   trans_len = 1;
                 }
               else
-                trans_len = wcrtomb (mbuf, tr, &trstate);
+                trans_len = c32rtomb1 (mbuf, tr);
 
-              if (mbclen < trans_len)
+              if (g.len < trans_len)
                 {
-                  idx_t len = trans_len + 1 - mbclen;
+                  idx_t len = trans_len + 1 - g.len;
                   if (line.alloc - line.length < len)
                     resize_line (&line, len);
                   move_remain_buffer = true;
                 }
-              else if (mbclen > trans_len)
+              else if (g.len > trans_len)
                 {
                   /* We must truncate the line buffer.  */
                   move_remain_buffer = true;
@@ -1221,10 +1146,10 @@ translate_mb (idx_t npairs, int *pair)
               if (move_remain_buffer)
                 {
                   /* Move the remaining with \0.  */
-                  char const *move_from = (line.active + idx + mbclen);
+                  char const *move_from = (line.active + idx + g.len);
                   char *move_to = line.active + idx + trans_len;
-                  idx_t move_len = line.length + 1 - idx - mbclen;
-                  idx_t move_offset = trans_len - mbclen;
+                  idx_t move_len = line.length + 1 - idx - g.len;
+                  idx_t move_offset = trans_len - g.len;
                   memmove (move_to, move_from, move_len);
                   line.length += move_offset;
                   idx += move_offset;
@@ -1233,7 +1158,6 @@ translate_mb (idx_t npairs, int *pair)
               break;
             }
         }
-      idx += mbclen;
     }
 }
 
@@ -1256,19 +1180,13 @@ debug_print_input (const struct input *input)
 static void
 debug_print_line (struct line *ln)
 {
-  const char *src = ln->active;
-  idx_t l = ln->length;
-  const char *p = src;
-
   fputs ( (ln == &hold) ? "HOLD:    ":"PATTERN: ", stdout);
-  mbstate_t mbs; mbszero (&mbs);
-  while (l)
+  char const *plim = ln->active + ln->length;
+  mcel_t g;
+  for (char const *p = ln->active; p < plim; p += g.len)
     {
-      int ch;
-      idx_t chlen = mbrtowc1 (&ch, p, l, &mbs);
-      debug_print_char (ch, p, chlen);
-      p += chlen;
-      l -= chlen;
+      g = mcel_scan (p, plim);
+      debug_print_char (g, p);
     }
   putchar ('\n');
 }
@@ -1352,7 +1270,7 @@ execute_program (struct vector *vec, struct input *input)
 #else
               FILE *pipe_fp;
               idx_t cmd_length = cur_cmd->x.cmd_txt.text_length;
-              line_reset (&s_accum, NULL);
+              line_reset (&s_accum);
 
               if (!cmd_length)
                 {
@@ -1390,11 +1308,7 @@ execute_program (struct vector *vec, struct input *input)
                             == buffer_delimiter))
                       s_accum.length--;
 
-                    /* Exchange line and s_accum.  This can be much
-                       cheaper than copying s_accum.active into line.text
-                       (for huge lines).  See comment above for 'g' as
-                       to while the third argument is incorrect anyway.  */
-                    line_exchange (&line, &s_accum, true);
+                    line_exchange (&line, &s_accum);
                   }
                 else
                   flush_output (output_file.fp);
@@ -1404,39 +1318,25 @@ execute_program (struct vector *vec, struct input *input)
             }
 
             case 'g':
-              /* We do not have a really good choice for the third parameter.
-                 The problem is that hold space and the input file might as
-                 well have different states; copying it from hold space means
-                 that subsequent input might be read incorrectly, while
-                 keeping it as in pattern space means that commands operating
-                 on the moved buffer might consider a wrong character set.
-                 We keep it true because it's what sed <= 4.1.5 did.  */
-              line_copy (&hold, &line, true);
+              line_copy (&hold, &line);
               if (debug)
                 debug_print_line (&hold);
               break;
 
             case 'G':
-              /* We do not have a really good choice for the third parameter.
-                 The problem is that hold space and pattern space might as
-                 well have different states.  So, true is as wrong as false.
-                 We keep it true because it's what sed <= 4.1.5 did, but
-                 we could consider having line_ap.  */
-              line_append (&hold, &line, true);
+              line_append (&hold, &line);
               if (debug)
                 debug_print_line (&line);
               break;
 
             case 'h':
-              /* Here, it is ok to have true.  */
-              line_copy (&line, &hold, true);
+              line_copy (&line, &hold);
               if (debug)
                 debug_print_line (&hold);
               break;
 
             case 'H':
-              /* See comment above for 'G' regarding the third parameter.  */
-              line_append (&line, &hold, true);
+              line_append (&line, &hold);
               if (debug)
                 debug_print_line (&hold);
               break;
@@ -1591,8 +1491,7 @@ execute_program (struct vector *vec, struct input *input)
               break;
 
             case 'x':
-              /* See comment above for 'g' regarding the third parameter.  */
-              line_exchange (&line, &hold, false);
+              line_exchange (&line, &hold);
               if (debug)
                 {
                   debug_print_line (&line);
@@ -1661,9 +1560,9 @@ process_files (struct vector *the_program, char **argv)
   struct input input;
   int status;
 
-  line_init (&line, NULL, INITIAL_BUFFER_SIZE);
-  line_init (&hold, NULL, 0);
-  line_init (&buffer, NULL, 0);
+  line_init (&line, INITIAL_BUFFER_SIZE);
+  line_init (&hold, 0);
+  line_init (&buffer, 0);
 
   input.reset_at_next_file = true;
   if (argv && *argv)

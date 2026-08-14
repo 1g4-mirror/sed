@@ -464,25 +464,17 @@ size_buffer (struct buffer const *b)
   return b->length;
 }
 
-char *
-add1_buffer (struct buffer *b, int c)
+void
+add1_buffer (struct buffer *b, char c)
 {
   /* This special case should be kept cheap;
    *  don't generalize it by using memcpy -- even "builtin"
    *  versions of memcpy(a, b, 1) can become
    *  expensive when called too often.
    */
-  if (c != EOF)
-    {
-      char *result;
-      if (b->length == b->allocated)
-        b->b = xpalloc (b->b, &b->allocated, 1, -1, 1);
-      result = b->b + b->length++;
-      *result = c;
-      return result;
-    }
-
-  return NULL;
+  if (b->length == b->allocated)
+    b->b = xpalloc (b->b, &b->allocated, 1, -1, 1);
+  b->b[b->length++] = c;
 }
 
 void

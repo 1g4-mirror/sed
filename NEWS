@@ -12,6 +12,10 @@ GNU sed NEWS                                    -*- outline -*-
   by escaping its individual bytes.
   [bug present since the beginning]
 
+  The 's' and 'y' commands now support multibyte delimiter characters,
+  e.g., 's替a替b替' is now equivalent to 's/a/b/'.
+  [bug present since the beginning]
+
   File names with odd characters are now quoted in diagnostics.
   The quoting style is the same as 'ls --quoting-style=shell-escape'.
   [bug present since the beginning]

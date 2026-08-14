@@ -31,16 +31,16 @@ static off_t block_level = 0;
 
 
 void
-debug_print_char (int c, char const *p, idx_t clen)
+debug_print_char (mcel_t g, char const *p)
 {
-  if (0 <= c && iswprint (c) && c != '\\')
+  if (c32isprint (g.ch) && g.ch != '\\')
     {
-      fwrite (p, 1, clen, stdout);
+      fwrite (p, 1, g.len, stdout);
       return;
     }
 
   putchar ('\\');
-  switch (c)
+  switch (g.ch)
     {
     case '\a':
       putchar ('a');
@@ -65,7 +65,7 @@ debug_print_char (int c, char const *p, idx_t clen)
       break;
 
     default:
-      for (idx_t i = 0; i < clen; i++)
+      for (idx_t i = 0; i < g.len; i++)
         printf (&"\\o%03o"[!i], (unsigned int) {(unsigned char) {p[i]}});
     }
 }
@@ -73,18 +73,14 @@ debug_print_char (int c, char const *p, idx_t clen)
 static void
 debug_print_regex_pattern (const char *pat, idx_t len)
 {
-  const char *p = pat;
-  mbstate_t mbs; mbszero (&mbs);
-  while (len)
+  mcel_t g;
+  char const *plim = pat + len;
+  for (char const *p = pat; p < plim; p += g.len)
     {
-      int ch;
-      idx_t chlen = mbrtowc1 (&ch, p, len, &mbs);
-      if (ch == '/')
-        fputs ("\\/", stdout);
-      else
-        debug_print_char (ch, p, chlen);
-      p += chlen;
-      len -= chlen;
+      g = mcel_scan (p, plim);
+      if (g.ch == '/')
+        putchar ('\\');
+      debug_print_char (g, p);
     }
 }
 
@@ -237,18 +233,14 @@ debug_print_subst (const struct subst *s)
 }
 
 static void
-debug_print_mb (int ch, mbstate_t *ps)
+debug_print_mb (int ch)
 {
   if (ch < 0)
-    {
-      fputc (-ch, stdout);
-      mbszero (ps);
-    }
+    fputc (-ch, stdout);
   else
     {
       char buf[MB_LEN_MAX];
-      size_t s = wcrtomb (buf, ch, ps);
-      fwrite (buf, 1, s, stdout);
+      fwrite (buf, 1, c32rtomb1 (buf, ch), stdout);
     }
 }
 
@@ -259,13 +251,11 @@ debug_print_translation (const struct sed_cmd *sc)
     {
       /* multibyte translation */
       putchar ('/');
-      mbstate_t mbs; mbszero (&mbs);
       for (idx_t i = 0; i < sc->x.translate.mb.npairs; i++)
-        debug_print_mb (sc->x.translate.mb.pair[2 * i], &mbs);
+        debug_print_mb (sc->x.translate.mb.pair[2 * i]);
       putchar ('/');
-      mbszero (&mbs);
       for (idx_t i = 0; i < sc->x.translate.mb.npairs; i++)
-        debug_print_mb (sc->x.translate.mb.pair[2 * i + 1], &mbs);
+        debug_print_mb (sc->x.translate.mb.pair[2 * i + 1]);
       putchar ('/');
     }
   else

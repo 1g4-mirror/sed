@@ -16,60 +16,11 @@
 
 #include "sed.h"
 #include <stdlib.h>
-#include <string.h>
-
-#include "localcharset.h"
 
 int mb_cur_max;
-bool is_utf8;
-
-/* Return non-zero if CH is part of a valid multibyte sequence:
-   Either incomplete yet valid sequence (in case of a leading byte),
-   or the last byte of a valid multibyte sequence.
-
-   Return zero in all other cases:
-    CH is a valid single-byte character (e.g. 0x01-0x7F in UTF-8 locales);
-    CH is an invalid byte in a multibyte sequence for the current locale,
-    CH is the NUL byte.
-
-   Reset CUR_STAT in the case of an invalid byte.
-*/
-int
-is_mb_char (int ch, mbstate_t *cur_stat)
-{
-  const char c = ch ;
-  const int mb_pending = !mbsinit (cur_stat);
-  size_t result = mbrlen (&c, 1, cur_stat);
-
-  switch (result)
-    {
-    case (size_t) -2:
-      /* Beginning or middle of valid multibyte sequence.  */
-      return 1;
-
-    case (size_t) -1:
-      /* Invalid sequence, byte treated like a single-byte character.  */
-      mbszero (cur_stat);
-      return 0;
-
-    case 1: /* A valid byte, check if part of on-going multibyte sequence */
-      return mb_pending;
-
-    case 0: /* Special case of mbrtowc(3): the NUL character */
-      /* TODO: test this */
-      return 1;
-
-    default: /* Should never happen, as per mbrtowc(3) documentation */
-      panic ("is_mb_char: mbrtowc (0x%x) returned %zu",
-             (unsigned int) ch, result);
-    }
-}
 
 void
 initialize_mbcs (void)
 {
-  /* For UTF-8, we know that the encoding is stateless.  */
-  is_utf8 = streq (locale_charset (), "UTF-8");
-
   mb_cur_max = MB_CUR_MAX;
 }

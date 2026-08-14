@@ -48,7 +48,7 @@ void remove_cleanup_file (void);
 struct buffer *init_buffer (void) _GL_ATTRIBUTE_MALLOC;
 char *get_buffer (struct buffer const *b) _GL_ATTRIBUTE_PURE;
 idx_t size_buffer (struct buffer const *b) _GL_ATTRIBUTE_PURE;
-char *add1_buffer (struct buffer *b, int ch);
+void add1_buffer (struct buffer *b, char ch);
 void free_buffer (struct buffer *b);
 
 char *quotef (char const *arg);

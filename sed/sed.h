@@ -18,6 +18,7 @@
 #include "basicdefs.h"
 #include "dfa.h"
 #include "localeinfo.h"
+#include "mcel.h"
 #include "regex.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -230,7 +231,7 @@ debug_print_command (const struct vector *program, const struct sed_cmd *sc);
 void
 debug_print_program (const struct vector *program);
 void
-debug_print_char (int c, char const *p, idx_t clen);
+debug_print_char (mcel_t g, char const *p);
 
 int process_files (struct vector *, char **argv);
 
@@ -272,9 +273,8 @@ extern char const *write_mode;
 /* Should we use EREs? */
 extern bool use_extended_syntax_p;
 
-/* Declarations for multibyte character sets.  */
+/* Declaration for multibyte character sets.  */
 extern int mb_cur_max;
-extern bool is_utf8;
 
 /* If set, operate in 'sandbox' mode - disable e/r/w commands */
 extern bool sandbox;
@@ -282,50 +282,15 @@ extern bool sandbox;
 /* If set, print debugging information.  */
 extern bool debug;
 
-/* Store into *PWC the representation of the first part of buffer S of size N.
-   If the buffer starts with a multibyte character, set *PWC = the
-   corresponding wide character and return the number of bytes in the
-   character; otherwise, set *PWC = -(unsigned char) {*S} and return 1.
-   *PWC is of type int, not wchar_t, so it can hold that negative value.
-   N must be positive.  PS is the conversion status.
-   The returned value is in the range 1..MB_CUR_MAX.  */
+/* Convert to S the wide character CH.
+   Return the number of bytes in S's representation.  */
 SED_INLINE idx_t
-mbrtowc1 (int *restrict pwc, char const *restrict s, idx_t n,
-          mbstate_t *restrict ps)
+c32rtomb1 (char *s, char32_t ch)
 {
-  wchar_t wc;
-  size_t r = mbrtowc (&wc, s, n, ps);
-  if (0 < r && r < (size_t) {-2})
-    {
-      *pwc = wc;
-      return r;
-    }
-  /* Treat a NUL byte or an encoding error as a single byte.  */
-  mbszero (ps);
-  *pwc = -(unsigned char) {*s};
-  return 1;
+  mbstate_t mbs; mbszero (&mbs);
+  return c32rtomb (s, ch, &mbs);
 }
 
-/* If buffer S of size N starts with a multibyte character return its length,
-   otherwise return 1.  N must be positive.  PS is the conversion status.
-   The returned value is in the range 1..MB_CUR_MAX.  */
-SED_INLINE idx_t
-mbrlen1 (char const *restrict s, idx_t n, mbstate_t *restrict ps)
-{
-  if (mb_cur_max == 1)
-    return 1;
-  size_t r = mbrlen (s, n, ps);
-  if (0 < r && r < (size_t) {-2})
-    return r;
-  /* Treat a NUL byte or an encoding error as a single byte.  */
-  mbszero (ps);
-  return 1;
-}
-
-#define IS_MB_CHAR(ch, ps)                \
-  (mb_cur_max == 1 ? 0 : is_mb_char (ch, ps))
-
-extern int is_mb_char (int ch, mbstate_t *ps);
 extern void initialize_mbcs (void);
 
 /* Use this to suppress gcc's '...may be used before initialized' warnings. */

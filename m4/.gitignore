@@ -123,7 +123,6 @@
 /manywarnings-c++.m4
 /manywarnings.m4
 /math_h.m4
-/mbrlen.m4
 /mbrtoc32-regular.m4
 /mbrtoc32.m4
 /mbrtowc.m4

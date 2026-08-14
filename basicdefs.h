@@ -17,9 +17,7 @@
 #ifndef BASICDEFS_H
 #define BASICDEFS_H
 
-#include <wchar.h>
 #include <locale.h>
-#include <wctype.h>
 #include <stdbool.h>
 
 #include <gettext.h>
@@ -38,33 +36,6 @@
 #ifndef PATH_MAX
 # define PATH_MAX 200
 #endif
-
-/* handle misdesigned <ctype.h> macros (snarfed from lib/regex.c) */
-/* Jim Meyering writes:
-
-   "... Some ctype macros are valid only for character codes that
-   isascii says are ASCII (SGI's IRIX-4.0.5 is one such system --when
-   using /bin/cc or gcc but without giving an ansi option)....  If
-   STDC_HEADERS is defined, then autoconf has verified that the ctype
-   macros don't need to be guarded with references to isascii. ...
-   Defining isascii to 1 should let any compiler worth its salt
-   eliminate the && through constant folding."
-   Solaris defines some of these symbols so we must undefine them first. */
-
-#undef ISASCII
-#if defined STDC_HEADERS || (!defined isascii && !defined HAVE_ISASCII)
-# define ISASCII(c) 1
-#else
-# define ISASCII(c) isascii(c)
-#endif
-
-#if defined isblank || defined HAVE_ISBLANK
-# define ISBLANK(c) (ISASCII (c) && isblank (c))
-#else
-# define ISBLANK(c) ((c) == ' ' || (c) == '\t')
-#endif
-
-#define ISSPACE(c) (ISASCII (c) && isspace (c))
 
 #ifndef initialize_main
 # ifdef __EMX__
