@@ -89,16 +89,16 @@ panic (const char *str, ...)
 
 /* Quote file names.  */
 
+static char *
+quotef_n (int n, char const *arg)
+{
+  return quotearg_n_style_colon (n, shell_escape_quoting_style, arg);
+}
+
 char *
 quotef (char const *arg)
 {
   return quotef_n (0, arg);
-}
-
-char *
-quotef_n (int n, char const *arg)
-{
-  return quotearg_n_style_colon (n, shell_escape_quoting_style, arg);
 }
 
 /* Internal routine to get a filename from open_files */
@@ -150,6 +150,8 @@ ck_fopen (const char *name, const char *mode, int fail)
   return fp;
 }
 
+#if (defined WIN32 || defined _WIN32 || defined __CYGWIN__ \
+     || defined MSDOS || defined __EMX__)
 /* Panic on failing fdopen */
 FILE *
 ck_fdopen ( int fd, const char *name, const char *mode, int fail)
@@ -168,6 +170,7 @@ ck_fdopen ( int fd, const char *name, const char *mode, int fail)
   register_open_file (fp, name);
   return fp;
 }
+#endif
 
 /* When we've created a temporary for an in-place update,
    we may have to exit before the rename.  This is the name
@@ -462,23 +465,10 @@ size_buffer (struct buffer const *b)
 }
 
 char *
-add_buffer (struct buffer *b, const char *p, idx_t n)
-{
-  char *result;
-  idx_t avail = b->allocated - b->length;
-  if (avail < n)
-    b->b = xpalloc (b->b, &b->allocated, n - avail, -1, 1);
-  result = memcpy (b->b + b->length, p, n);
-  b->length += n;
-  return result;
-}
-
-char *
 add1_buffer (struct buffer *b, int c)
 {
   /* This special case should be kept cheap;
-   *  don't make it just a mere convenience
-   *  wrapper for add_buffer() -- even "builtin"
+   *  don't generalize it by using memcpy -- even "builtin"
    *  versions of memcpy(a, b, 1) can become
    *  expensive when called too often.
    */
