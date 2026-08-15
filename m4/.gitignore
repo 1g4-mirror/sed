@@ -1,3 +1,4 @@
+/lock.m4
 /00gnulib.m4
 /__inline.m4
 /absolute-header.m4
@@ -114,7 +115,6 @@
 /locale_h.m4
 /localeconv.m4
 /localename.m4
-/lock.m4
 /longlong.m4
 /lseek.m4
 /lstat.m4
@@ -153,7 +153,6 @@
 /obstack.m4
 /off64_t.m4
 /off_t.m4
-/once.m4
 /open-cloexec.m4
 /open-slash.m4
 /open.m4
@@ -167,22 +166,14 @@
 /printf-posix.m4
 /progtest.m4
 /pselect.m4
-/pthread-cond.m4
-/pthread-mutex.m4
-/pthread-once.m4
-/pthread-rwlock.m4
 /pthread-spin.m4
 /pthread-thread.m4
 /pthread_h.m4
-/pthread_mutex_timedlock.m4
-/pthread_rwlock_rdlock.m4
 /pthread_sigmask.m4
 /putenv.m4
 /quote.m4
 /quotearg.m4
 /raise.m4
-/random.m4
-/random_r.m4
 /rawmemchr.m4
 /read-file.m4
 /readdir.m4
@@ -193,12 +184,10 @@
 /rename.m4
 /rmdir.m4
 /sched_h.m4
-/sched_yield.m4
 /select.m4
 /selinux-context-h.m4
 /selinux-label-h.m4
 /selinux-selinux-h.m4
-/semaphore.m4
 /setenv.m4
 /setlocale.m4
 /setlocale_null.m4
@@ -280,5 +269,4 @@
 /xattr.m4
 /xgetcwd.m4
 /xsize.m4
-/yield.m4
 /zzgnulib.m4

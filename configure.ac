@@ -31,6 +31,28 @@ gl_EARLY
 gl_INIT
 gl_DISABLE_THREADS
 
+AC_DEFINE([GNULIB_EXCLUDE_SINGLE_THREAD], [1],
+  [Define if all programs in this package call functions of the Gnulib
+   'exclude' module only from a single thread.])
+AC_DEFINE([GNULIB_LOCALENAME_SINGLE_THREAD], [1],
+  [Define if all programs in this package call functions of the Gnulib
+   'getlocalename_l-simple', 'getlocalename_l-unsafe', and 'localename'
+   modules only from a single thread.])
+AC_DEFINE([GNULIB_MBRTOWC_SINGLE_THREAD], [1],
+  [Define if all programs in this package call functions of the Gnulib
+   'mbtowc' module only from a single thread.])
+AC_DEFINE([GNULIB_REGEX_SINGLE_THREAD], [1],
+  [Define if all programs in this package call functions of the Gnulib
+   'regex' module only from a single thread.])
+AC_DEFINE([GNULIB_WCHAR_SINGLE_LOCALE], [1],
+  [Define if all programs in this package call locale-sensitive functions
+   like mbrtowc only after setting the locale, and never change the
+   locale once set.])
+
+AC_DEFINE([GNULIB_MBRTOC32_REGULAR], [1],
+  [Do not worry about rare encodings like CP864, EBCDIC, Johab, and Shift JIS
+   that glibc does not support.])
+
 # Ensure VLAs are not used.
 # Note -Wvla is implicitly added by gl_MANYWARN_ALL_GCC
 AC_DEFINE([GNULIB_NO_VLA], [1], [Define to 1 to disable use of VLAs])
