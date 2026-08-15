@@ -16,6 +16,8 @@
 
 #include <config.h>
 
+#include "utils.h"
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <errno.h>
@@ -28,14 +30,15 @@
 
 #include "binary-io.h"
 #include "min-eloop-threshold.h"
-#include "idx.h"
 #include "minmax.h"
 #include "quotearg.h"
 #include "unlocked-io.h"
-#include "utils.h"
 #include "progname.h"
 #include "fwriting.h"
 #include "xalloc.h"
+
+#include <gettext.h>
+#define _(msgid) gettext (msgid)
 
 #ifdef SSIZE_MAX
 # define SSIZE_IDX_MAX MIN (SSIZE_MAX, IDX_MAX)

@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 
-#include "basicdefs.h"
+#include "idx.h"
 
 enum exit_codes {
                       /* EXIT_SUCCESS is already defined as 0 */

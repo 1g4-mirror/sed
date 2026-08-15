@@ -15,7 +15,7 @@
     along with this program; If not, see <https://www.gnu.org/licenses/>. */
 
 #include <config.h>
-#include "basicdefs.h"
+
 #include "dfa.h"
 #include "localeinfo.h"
 #include "mcel.h"
@@ -25,6 +25,9 @@
 #include "unlocked-io.h"
 
 #include "utils.h"
+
+#include <gettext.h>
+#define _(msgid) gettext (msgid)
 
 _GL_INLINE_HEADER_BEGIN
 
