@@ -135,7 +135,6 @@ bad_prog (char const *why, ...)
   va_list ap;
   va_start (ap, why);
   vbad_prog (gettext (why), ap);
-  va_end (ap);
 }
 void
 bad_prog_notranslate (const char *why, ...)
@@ -143,7 +142,6 @@ bad_prog_notranslate (const char *why, ...)
   va_list ap;
   va_start (ap, why);
   vbad_prog (why, ap);
-  va_end (ap);
 }
 
 enum { INCHAR_EOF = -1 - UCHAR_MAX };
@@ -568,10 +566,8 @@ mark_subst_opts (struct subst *cmd)
         if (inchar () == '\n')
           return flags;
         FALLTHROUGH;
-
       default:
         bad_prog ("unknown option to 's'");
-        unreachable ();
       }
 }
 
@@ -958,7 +954,6 @@ compile_program (struct vector *vector)
            case 'e': case 'F': case 'v': case 'z':
            case 'Q': case 'T': case 'R': case 'W':
              bad_prog ("unknown command: '%c'", ch);
-             FALLTHROUGH;
 
             case 'a': case 'i': case 'l':
             case '=': case 'r':
