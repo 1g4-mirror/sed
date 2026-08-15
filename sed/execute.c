@@ -434,7 +434,7 @@ get_backup_file_name (const char *name)
        (asterisk = strchr (old_asterisk, '*'));
        old_asterisk = asterisk + 1)
     asterisks++;
-  ptrdiff_t name_length = strlen (name), backup_size;
+  idx_t name_length = strlen (name), backup_size;
   if (ckd_mul (&backup_size, asterisks, name_length - 1)
       || ckd_add (&backup_size, backup_size, strlen (in_place_extension) + 1))
     xalloc_die ();
