@@ -24,9 +24,6 @@ print_ver_ sed
 # If found, LOCALE_JA_SJIS will contain the locale name.
 require_ja_shiftjis_locale_
 
-# Ensure the implementation is not buggy (skip otherwise)
-require_valid_ja_shiftjis_locale_ "$LOCALE_JA_SJIS"
-
 # This test uses two characters:
 # Unicode Character 'KATAKANA LETTER ZE' (U+30BC)
 # Unicode Character 'KATAKANA LETTER ZO' (U+30BE)

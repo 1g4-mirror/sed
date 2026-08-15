@@ -127,9 +127,8 @@ TESTS = $(SEDTESTS) $(T)
 
 SEDTESTS =
 
-check_PROGRAMS = testsuite/get-mb-cur-max testsuite/test-mbrtowc
+check_PROGRAMS = testsuite/get-mb-cur-max
 testsuite_get_mb_cur_max_LDADD = lib/libsed.a $(INTLLIBS)
-testsuite_test_mbrtowc_LDADD = lib/libsed.a $(INTLLIBS)
 
 # Note that the first lines are statements.  They ensure that environment
 # variables that can perturb tests are unset or set to expected values.
