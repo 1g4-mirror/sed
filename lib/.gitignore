@@ -216,7 +216,6 @@
 /setlocale_null-unlocked.c
 /setlocale_null.c
 /setlocale_null.h
-/stat-macros.h
 /stat-time.c
 /stat-time.h
 /stat-w32.c

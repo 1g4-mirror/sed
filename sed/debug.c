@@ -20,11 +20,7 @@
 
 #include "sed.h"
 
-#include <ctype.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
 
 /* indentation level when printing the program */
 static off_t block_level = 0;

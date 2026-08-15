@@ -16,7 +16,7 @@
 
 #include <idx.h>
 
-#include <stdio.h>
+#include <unlocked-io.h>
 
 enum exit_codes {
                       /* EXIT_SUCCESS is already defined as 0 */

@@ -27,10 +27,8 @@
 #include <errno.h>
 #include <obstack.h>
 #include <stdckdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 
 #define obstack_chunk_alloc  xzalloc
 #define obstack_chunk_free   free

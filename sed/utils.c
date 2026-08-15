@@ -24,17 +24,14 @@
 #include <minmax.h>
 #include <progname.h>
 #include <quotearg.h>
-#include <unlocked-io.h>
 #include <xalloc.h>
 
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include <gettext.h>

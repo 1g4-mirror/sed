@@ -23,20 +23,15 @@
 #include <ignore-value.h>
 #include <minmax.h>
 #include <progname.h>
-#include <stat-macros.h>
 #include <xalloc.h>
 
-#include <ctype.h>
 #include <errno.h>
-#include <selinux/context.h>
 #include <selinux/selinux.h>
 #include <stdckdint.h>
 #include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 /* The number of extra bytes that must be allocated/usable, beyond

@@ -29,11 +29,8 @@
 #include <limits.h>
 #include <locale.h>
 #include <selinux/selinux.h>
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #define AUTHORS \
    _("Jay Fenlason"), \

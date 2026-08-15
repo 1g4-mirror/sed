@@ -18,10 +18,8 @@
 
 #include <xalloc.h>
 
-#include <ctype.h>
-#include <limits.h>
+#include <dfa.h>
 #include <stdckdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
