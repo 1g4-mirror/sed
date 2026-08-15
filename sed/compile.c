@@ -19,11 +19,11 @@
 #include "sed.h"
 
 #include <c-ctype.h>
+#include <minmax.h>
 #include <progname.h>
 #include <read-file.h>
 #include <xalloc.h>
 
-#include <ctype.h>
 #include <errno.h>
 #include <obstack.h>
 #include <stdckdint.h>
@@ -241,10 +241,10 @@ static char *
 convert_number (char *result, char *buf, const char *bufend, int base)
 {
   int n = 0;
-  int max = 1;
   char *p;
+  char *plim = buf + MIN (bufend - buf, 2 + (base < 16));
 
-  for (p=buf+1; p < bufend && max <= 255; ++p, max *= base)
+  for (p = buf; p < plim; p++)
     {
       int d = -1;
       switch (*p)
@@ -270,10 +270,8 @@ convert_number (char *result, char *buf, const char *bufend, int base)
         break;
       n = n * base + d;
     }
-  if (p == buf+1)
-    *result = *buf;
-  else
-    *result = n;
+
+  *result = n & UCHAR_MAX;
   return p;
 }
 
@@ -1270,8 +1268,6 @@ normalize_text (char *buf, idx_t len, enum text_types buftype)
   const char *bufend = buf + len;
   char *p = buf;
   char *q = buf;
-  char ch;
-  int base;
 
   /* This variable prevents normalizing text within bracket
      subexpressions when conforming to POSIX.  If 0, we
@@ -1292,17 +1288,20 @@ normalize_text (char *buf, idx_t len, enum text_types buftype)
           continue;
         }
 
-      if (*p == '\\' && p+1 < bufend && bracket_state == 0)
+      int base;
+      char ch = *p;
+
+      if (ch == '\\' && p + 1 < bufend && bracket_state == 0)
         switch (*++p)
           {
-          case 'a': *q++ = '\a'; p++; continue;
-          /* case 'b': *q++ = '\b'; p++; continue; --- conflicts with \b RE */
-          case 'f': *q++ = '\f'; p++; continue;
+          case 'a': ch = '\a'; break;
+          /* case 'b' would conflict with \b RE.  */
+          case 'f': ch = '\f'; break;
           case '\n': /*fall through */
-          case 'n': *q++ = '\n'; p++; continue;
-          case 'r': *q++ = '\r'; p++; continue;
-          case 't': *q++ = '\t'; p++; continue;
-          case 'v': *q++ = '\v'; p++; continue;
+          case 'n': ch = '\n'; break;
+          case 'r': ch = '\r'; break;
+          case 't': ch = '\t'; break;
+          case 'v': ch = '\v'; break;
 
           case 'd': /* decimal byte */
             base = 10;
@@ -1315,39 +1314,38 @@ normalize_text (char *buf, idx_t len, enum text_types buftype)
           case 'o': /* octal byte */
             base = 8;
 convert:
-            p = convert_number (&ch, p, bufend, base);
+            if (bufend - p < 2)
+              goto unrecognized_escape;
+            char *p1 = convert_number (&ch, p + 1, bufend, base);
+            if (p1 == p + 1)
+              goto unrecognized_escape;
+            p = p1 - 1;
 
-            /* for an ampersand in a replacement, pass the \ up one level */
+            /* Re-escape any escaped & or \ in a replacement.  */
             if (buftype == TEXT_REPLACEMENT && (ch == '&' || ch == '\\'))
               *q++ = '\\';
-            *q++ = ch;
-            continue;
+            break;
 
           case 'c':
-            if (++p < bufend)
+            if (bufend - p < 2)
+              goto unrecognized_escape;
+            p++;
+
+            ch = c_toupper (*p) ^ 0x40;
+            if (*p == '\\')
               {
-                *q++ = toupper ((unsigned char) *p) ^ 0x40;
-                if (*p == '\\')
-                  {
-                    p++;
-                    if (*p != '\\')
-                      bad_prog ("recursive escaping after \\c not allowed");
-                  }
                 p++;
-                continue;
+                if (! (p < bufend && *p == '\\'))
+                  bad_prog ("recursive escaping after \\c not allowed");
               }
-            else
-              {
-                /* we just pass the \ up one level for interpretation */
-                if (buftype != TEXT_BUFFER)
-                  *q++ = '\\';
-                continue;
-              }
+            break;
 
           default:
+          unrecognized_escape:
             /* we just pass the \ up one level for interpretation */
             if (buftype != TEXT_BUFFER)
               *q++ = '\\';
+            ch = *p;
             break;
           }
       else if (buftype == TEXT_REGEX && posixicity != POSIXLY_EXTENDED)
@@ -1375,7 +1373,8 @@ convert:
             break;
           }
 
-      *q++ = *p++;
+      *q++ = ch;
+      p++;
     }
     return q - buf;
 }

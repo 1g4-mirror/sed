@@ -3339,20 +3339,29 @@ Produces or matches a so called ``vertical tab'' (@sc{ascii} 11).
 
 @item \c@var{x}
 Produces or matches @kbd{@sc{Control}-@var{x}}, where @var{x} is
-any character.  The precise effect of @samp{\c@var{x}} is as follows:
-if @var{x} is a lower case letter, it is converted to upper case.
-Then bit 6 of the character (hex 40) is inverted.  Thus @samp{\cz} becomes
+any single byte.  The precise effect of @samp{\c@var{x}} is as follows:
+if @var{x} is a lower case ASCII letter,
+it is converted to upper case ASCII using English-language rules.
+Then bit 6 of the byte (hex 40) is inverted.  Thus @samp{\cz} becomes
 hex 1A, but @samp{\c@{} becomes hex 3B, while @samp{\c;} becomes hex 7B.
 
 @item \d@var{xxx}
-Produces or matches a character whose decimal @sc{ascii} value is @var{xxx}.
+Produces or matches a byte whose decimal value is @var{xxx}.
 
 @item \o@var{xxx}
-Produces or matches a character whose octal @sc{ascii} value is @var{xxx}.
+Produces or matches a byte whose octal value is @var{xxx}.
 
 @item \x@var{xx}
-Produces or matches a character whose hexadecimal @sc{ascii} value is @var{xx}.
+Produces or matches a byte whose hexadecimal value is @var{xx}.
 @end table
+
+When not followed by a digit, the @samp{\d@var{xxx}},
+@samp{\o@var{xxx}}, and @samp{\x@var{xx}} escapes can contain just one
+or two digits instead of the full number of digits.  Only the
+low-order eight bits are significant in the specified value.
+Because these escapes and the @samp{\c@var{x}} escape
+deal with bytes and not characters, they can produce or match
+encoding-error bytes and individual bytes of multibyte characters.
 
 @samp{\b} (backspace) was omitted because of the conflict with
 the existing ``word boundary'' meaning.

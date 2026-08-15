@@ -20,6 +20,16 @@ GNU sed NEWS                                    -*- outline -*-
   The quoting style is the same as 'ls --quoting-style=shell-escape'.
   [bug present since the beginning]
 
+  Any '\c', '\d', '\o', or '\x' at the end of a string that can hold
+  escapes is now treated like other unrecognized escapes.  Formerly
+  the behavior was inconsistent and in rare cases undefined.  In any
+  case the behavior is undocumented so users should not rely on it.
+  [bug present since the beginning]
+
+  The escape '\ci' now means control-I (U+0009 TAB) even in a
+  tr_TR.iso88599 locale where capitalizing 'i' does not yield 'I'.
+  [bug present since the beginning]
+
 
 * Noteworthy changes in release 4.10 (2026-04-21) [stable]
 
