@@ -247,7 +247,7 @@ debug_print_mb (int ch)
 static void
 debug_print_translation (const struct sed_cmd *sc)
 {
-  if (mb_cur_max > 1)
+  if (MB_CUR_MAX != 1)
     {
       /* multibyte translation */
       putchar ('/');

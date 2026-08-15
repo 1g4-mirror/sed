@@ -173,8 +173,11 @@ str_append_modified (struct line *to, const char *string, idx_t length,
       return;
     }
 
-  if (to->alloc - to->length < length * mb_cur_max)
-    resize_line (to, length * mb_cur_max);
+  idx_t mb_cur_max = MB_CUR_MAX, worst_case_growth;
+  if (ckd_mul (&worst_case_growth, length, mb_cur_max))
+    xalloc_die ();
+  if (to->alloc - to->length < worst_case_growth)
+    resize_line (to, worst_case_growth);
 
   char const *stringlim = string + length;
   while (string < stringlim)
@@ -1500,7 +1503,7 @@ execute_program (struct vector *vec, struct input *input)
               break;
 
             case 'y':
-              if (mb_cur_max > 1)
+              if (MB_CUR_MAX != 1)
                 translate_mb (cur_cmd->x.translate.mb.npairs,
                               cur_cmd->x.translate.mb.pair);
               else

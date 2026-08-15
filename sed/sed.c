@@ -229,7 +229,6 @@ main (int argc, char **argv)
   /* Set locale according to user's wishes.  */
   setlocale (LC_ALL, "");
 #endif
-  initialize_mbcs ();
   init_localeinfo (&localeinfo);
 
   /* Arrange to remove any un-renamed temporary file,

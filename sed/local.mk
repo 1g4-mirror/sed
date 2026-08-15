@@ -21,7 +21,6 @@ sed_sed_SOURCES =	\
   sed/compile.c		\
   sed/debug.c		\
   sed/execute.c		\
-  sed/mbcs.c		\
   sed/regexp.c		\
   sed/sed.c		\
   sed/utils.c

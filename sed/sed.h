@@ -273,9 +273,6 @@ extern char const *write_mode;
 /* Should we use EREs? */
 extern bool use_extended_syntax_p;
 
-/* Declaration for multibyte character sets.  */
-extern int mb_cur_max;
-
 /* If set, operate in 'sandbox' mode - disable e/r/w commands */
 extern bool sandbox;
 
@@ -290,8 +287,6 @@ c32rtomb1 (char *s, char32_t ch)
   mbstate_t mbs; mbszero (&mbs);
   return c32rtomb (s, ch, &mbs);
 }
-
-extern void initialize_mbcs (void);
 
 /* Use this to suppress gcc's '...may be used before initialized' warnings. */
 #ifdef lint

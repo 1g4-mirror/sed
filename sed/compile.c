@@ -1184,7 +1184,7 @@ compile_program (struct vector *vector)
             dest_buf = get_buffer (b2);
             dest_len = normalize_text (dest_buf, size_buffer (b2), TEXT_BUFFER);
 
-            if (mb_cur_max > 1)
+            if (MB_CUR_MAX != 1)
               {
                 /* Enumerate how many character the source buffer has.  */
                 idx_t src_char_num = 0;
