@@ -173,8 +173,8 @@ str_append_modified (struct line *to, const char *string, idx_t length,
       return;
     }
 
-  idx_t mb_cur_max = MB_CUR_MAX, worst_case_growth;
-  if (ckd_mul (&worst_case_growth, length, mb_cur_max))
+  idx_t worst_case_growth;
+  if (ckd_mul (&worst_case_growth, length, MB_LEN_MAX))
     xalloc_die ();
   if (to->alloc - to->length < worst_case_growth)
     resize_line (to, worst_case_growth);
