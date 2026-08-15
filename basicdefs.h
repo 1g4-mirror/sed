@@ -18,7 +18,6 @@
 #define BASICDEFS_H
 
 #include <locale.h>
-#include <stdbool.h>
 
 #include <gettext.h>
 #define _(String) gettext(String)
@@ -28,22 +27,5 @@
 
 #define obstack_chunk_alloc  xzalloc
 #define obstack_chunk_free   free
-
-/* MAX_PATH is not defined in some platforms, most notably GNU/Hurd.
-   In that case we define it here to some constant.  Note however that
-   this relies in the fact that sed does reallocation if a buffer
-   needs to be larger than PATH_MAX.  */
-#ifndef PATH_MAX
-# define PATH_MAX 200
-#endif
-
-#ifndef initialize_main
-# ifdef __EMX__
-#  define initialize_main(argcp, argvp) \
-  { _response (argcp, argvp); _wildcard (argcp, argvp); }
-# else /* NOT __EMX__ */
-#  define initialize_main(argcp, argvp)
-# endif
-#endif
 
 #endif /*!BASICDEFS_H*/

@@ -224,7 +224,6 @@ main (int argc, char **argv)
   const char *cols = getenv ("COLS");
 
   set_program_name (argv[0]);
-  initialize_main (&argc, &argv);
 #if HAVE_SETLOCALE
   /* Set locale according to user's wishes.  */
   setlocale (LC_ALL, "");

@@ -471,8 +471,7 @@ open_next_file (const char *name, struct input *input)
   if (name[0] == '-' && name[1] == '\0' && !in_place_extension)
     {
       clearerr (stdin);	/* clear any stale EOF indication */
-#if defined WIN32 || defined _WIN32 || defined __CYGWIN__ \
-  || defined MSDOS || defined __EMX__
+#if defined WIN32 || defined _WIN32 || defined __CYGWIN__ || defined MSDOS
       input->fp = ck_fdopen (fileno (stdin), "stdin", read_mode, false);
 #else
       input->fp = stdin;

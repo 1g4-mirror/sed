@@ -150,8 +150,7 @@ ck_fopen (const char *name, const char *mode, int fail)
   return fp;
 }
 
-#if (defined WIN32 || defined _WIN32 || defined __CYGWIN__ \
-     || defined MSDOS || defined __EMX__)
+#if defined WIN32 || defined _WIN32 || defined __CYGWIN__ || defined MSDOS
 /* Panic on failing fdopen */
 FILE *
 ck_fdopen ( int fd, const char *name, const char *mode, int fail)
