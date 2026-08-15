@@ -18,24 +18,24 @@
 
 #include "utils.h"
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <limits.h>
+#include <binary-io.h>
+#include <fwriting.h>
+#include <min-eloop-threshold.h>
+#include <minmax.h>
+#include <progname.h>
+#include <quotearg.h>
+#include <unlocked-io.h>
+#include <xalloc.h>
 
-#include "binary-io.h"
-#include "min-eloop-threshold.h"
-#include "minmax.h"
-#include "quotearg.h"
-#include "unlocked-io.h"
-#include "progname.h"
-#include "fwriting.h"
-#include "xalloc.h"
+#include <errno.h>
+#include <limits.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)

@@ -14,9 +14,9 @@
     You should have received a copy of the GNU General Public License
     along with this program; If not, see <https://www.gnu.org/licenses/>. */
 
-#include <stdio.h>
+#include <idx.h>
 
-#include "idx.h"
+#include <stdio.h>
 
 enum exit_codes {
                       /* EXIT_SUCCESS is already defined as 0 */

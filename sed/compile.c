@@ -17,18 +17,20 @@
 /* compile.c: translate sed source into internal form */
 
 #include "sed.h"
+
+#include <c-ctype.h>
+#include <progname.h>
+#include <read-file.h>
+#include <xalloc.h>
+
+#include <ctype.h>
 #include <errno.h>
+#include <obstack.h>
 #include <stdckdint.h>
 #include <stdio.h>
-#include <ctype.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
-#include <obstack.h>
-#include "c-ctype.h"
-#include "read-file.h"
-#include "progname.h"
-#include "xalloc.h"
 
 #define obstack_chunk_alloc  xzalloc
 #define obstack_chunk_free   free

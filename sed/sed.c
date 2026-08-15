@@ -17,6 +17,13 @@
 #define SED_INLINE _GL_EXTERN_INLINE
 #include "sed.h"
 
+#include "version.h"
+
+#include <binary-io.h>
+#include <progname.h>
+#include <version-etc.h>
+#include <xalloc.h>
+
 #include <getopt.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -27,13 +34,6 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include "binary-io.h"
-#include "progname.h"
-#include "version.h"
-#include "xalloc.h"
-
-#include "version-etc.h"
 
 #define AUTHORS \
    _("Jay Fenlason"), \

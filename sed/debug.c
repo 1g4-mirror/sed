@@ -20,10 +20,10 @@
 
 #include "sed.h"
 
-#include <stdio.h>
 #include <ctype.h>
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 
 /* indentation level when printing the program */

@@ -16,14 +16,14 @@
 
 #include "sed.h"
 
+#include <xalloc.h>
+
 #include <ctype.h>
 #include <limits.h>
-#include <string.h>
 #include <stdckdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "xalloc.h"
+#include <string.h>
 
 extern bool use_extended_syntax_p;
 

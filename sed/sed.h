@@ -16,15 +16,16 @@
 
 #include <config.h>
 
-#include "dfa.h"
-#include "localeinfo.h"
-#include "mcel.h"
-#include "regex.h"
+#include "utils.h"
+
+#include <dfa.h>
+#include <localeinfo.h>
+#include <mcel.h>
+#include <unlocked-io.h>
+
+#include <regex.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "unlocked-io.h"
-
-#include "utils.h"
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)

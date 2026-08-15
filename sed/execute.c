@@ -19,25 +19,25 @@
 
 #include "sed.h"
 
+#include <acl.h>
+#include <ignore-value.h>
+#include <minmax.h>
+#include <progname.h>
+#include <stat-macros.h>
+#include <xalloc.h>
+
+#include <ctype.h>
+#include <errno.h>
+#include <selinux/context.h>
+#include <selinux/selinux.h>
 #include <stdckdint.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <string.h>
 #include <sys/stat.h>
-#include "stat-macros.h"
-
-#include <selinux/selinux.h>
-#include <selinux/context.h>
-#include "acl.h"
-#include "ignore-value.h"
-#include "minmax.h"
-#include "progname.h"
-#include "xalloc.h"
+#include <sys/types.h>
+#include <unistd.h>
 
 /* The number of extra bytes that must be allocated/usable, beyond
    the declared "end" of each line buffer that may be passed to
