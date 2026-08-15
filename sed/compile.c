@@ -30,6 +30,9 @@
 #include "progname.h"
 #include "xalloc.h"
 
+#define obstack_chunk_alloc  xzalloc
+#define obstack_chunk_free   free
+
 /* let's not confuse text editors that have only dumb bracket-matching... */
 #define OPEN_BRACKET	'['
 #define CLOSE_BRACKET	']'

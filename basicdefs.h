@@ -17,15 +17,10 @@
 #ifndef BASICDEFS_H
 #define BASICDEFS_H
 
-#include <locale.h>
-
 #include <gettext.h>
 #define _(String) gettext(String)
 
 #include "idx.h"
 #include "xalloc.h"
-
-#define obstack_chunk_alloc  xzalloc
-#define obstack_chunk_free   free
 
 #endif /*!BASICDEFS_H*/

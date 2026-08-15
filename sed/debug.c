@@ -19,7 +19,7 @@
 /* debug.c: debugging functions */
 
 #include "sed.h"
-#include "basicdefs.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
