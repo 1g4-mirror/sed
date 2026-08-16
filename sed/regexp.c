@@ -19,6 +19,7 @@
 #include <xalloc.h>
 
 #include <dfa.h>
+#include <flexmember.h>
 #include <stdckdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -145,7 +146,7 @@ compile_regex (struct buffer *b, int flags, int needed_sub)
     }
 
   re_len = size_buffer (b);
-  new_regex = xzalloc (sizeof (struct regex) + re_len - 1);
+  new_regex = xzalloc (FLEXSIZEOF (struct regex, re, re_len));
   new_regex->flags = flags;
   memcpy (new_regex->re, get_buffer (b), re_len);
 

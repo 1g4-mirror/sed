@@ -63,7 +63,7 @@ struct regex {
   struct dfa *dfa;
   bool begline;
   bool endline;
-  char re[1];
+  char re[FLEXIBLE_ARRAY_MEMBER];
 };
 
 struct readcmd {
