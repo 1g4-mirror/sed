@@ -102,21 +102,13 @@ if test "$sed_cv_libcp_needed" = yes; then
   LIBS="-lcP $LIBS"
 fi
 
-AC_C_CONST
-AC_TYPE_SIZE_T
-
 AM_GNU_GETTEXT_VERSION([0.19.2])
 AM_GNU_GETTEXT([external])
 
-AC_CHECK_FUNCS_ONCE(isatty memcpy strchr strtoul readlink
-                    popen pathconf fchown fchmod setlocale)
+AC_CHECK_FUNCS_ONCE([readlink popen fchown setlocale])
 
 AM_CONDITIONAL([TEST_SYMLINKS],
           [test "$ac_cv_func_readlink" = yes])
-
-AC_ARG_ENABLE(i18n,
-[  --disable-i18n          disable internationalization (default=enabled)], ,
-enable_i18n=yes)
 
 XFAIL_TESTS=
 
@@ -127,10 +119,14 @@ esac
 AC_SUBST([XFAIL_TESTS])
 
 AC_ARG_ENABLE([gcc-warnings],
-  [AS_HELP_STRING([--enable-gcc-warnings],
-     [turn on many GCC warnings (for developers; best with GNU make)])],
+  [AS_HELP_STRING([--enable-gcc-warnings@<:@=TYPE@:>@],
+    [control generation of GCC warnings.  The TYPE 'no' disables
+     warnings (default for non-developer builds); 'yes' generates
+     cheap warnings if available (default for developer builds);
+     'expensive' in addition generates expensive-to-compute warnings
+     if available.])],
   [case $enableval in
-     yes|no) ;;
+     no|yes|expensive) ;;
      *)      AC_MSG_ERROR([bad value $enableval for gcc-warnings option]) ;;
    esac
    gl_gcc_warnings=$enableval],
@@ -146,43 +142,43 @@ AC_ARG_ENABLE([gcc-warnings],
                           && gl_gcc_warnings=yes])]
 )
 
-if test "$gl_gcc_warnings" = yes; then
+# clang is unduly picky about some things, even by default.
+if test "$gl_cv_compiler_clang" = yes; then
+  gl_WARN_ADD([-Wno-format-extra-args])
+  gl_WARN_ADD([-Wno-implicit-const-int-float-conversion])
+  gl_WARN_ADD([-Wno-tautological-constant-out-of-range-compare])
+fi
+
+if test $gl_gcc_warnings != no; then
   gl_WARN_ADD([-Werror], [WERROR_CFLAGS])
   AC_SUBST([WERROR_CFLAGS])
 
-  nw=
+  ew=
+  AS_IF([test $gl_gcc_warnings != expensive],
+    [# -fanalyzer and related options slow GCC considerably.
+     ew="$ew -fanalyzer -Wno-analyzer-malloc-leak"])
+
   # This, $nw, is the list of warnings we disable.
-  nw="$nw -Wdeclaration-after-statement" # too useful to forbid
-  nw="$nw -Wsystem-headers"         # Don't let system headers trigger warnings
-  nw="$nw -Wsign-conversion"        # Too many warnings for now
-  nw="$nw -Wswitch-default"         # Too many warnings for now
+  nw=$ew
+  nw="$nw -Wstack-protector"        # not worth working around for pre GCC 15
+  nw="$nw -Wformat-overflow=2"      # False alarms due to GCC bug 110333
+  nw="$nw -Wformat-truncation=2"    # False alarm in ls.c, probably related
+  nw="$nw -Winline"                 # system.h's readdir_ignoring_dot_and_dotdot
+
+  # Using -Wstrict-overflow is a pain, but the alternative is worse.
+  # For an example, see the code that provoked this report:
+  # https://gcc.gnu.org/PR33498
+  # Code like that still infloops with gcc-4.6.0 and -O2.  Scary indeed.
 
   gl_MANYWARN_ALL_GCC([ws])
+  AS_VAR_APPEND([ws], [' -Wswitch-enum'])
+  AS_VAR_APPEND([ws], [' -Wtrailing-whitespace'])
   gl_MANYWARN_COMPLEMENT([ws], [$ws], [$nw])
   for w in $ws; do
     gl_WARN_ADD([$w])
   done
   gl_WARN_ADD([-Wno-sign-compare])     # Too many warnings for now
-  gl_WARN_ADD([-Wno-format-nonliteral]) # ngettext in ck_fwrite
-  gl_WARN_ADD([-Wno-keyword-macro])
-
-  # clang is unduly picky about some things.
-  AC_CACHE_CHECK([whether the compiler is clang], [utils_cv_clang],
-    [AC_COMPILE_IFELSE(
-       [AC_LANG_PROGRAM([[
-            #ifndef __clang__
-              #error "not clang"
-            #endif
-          ]])],
-       [utils_cv_clang=yes],
-       [utils_cv_clang=no])])
-  if test $utils_cv_clang = yes; then
-    gl_WARN_ADD([-Wno-format-extra-args])
-    gl_WARN_ADD([-Wno-tautological-constant-out-of-range-compare])
-  fi
-
-  gl_WARN_ADD([-fdiagnostics-show-option])
-  gl_WARN_ADD([-funit-at-a-time])
+  gl_WARN_ADD([-Wno-format-nonliteral])
 
   AC_SUBST([WARN_CFLAGS])
 
@@ -193,13 +189,29 @@ if test "$gl_gcc_warnings" = yes; then
    #if !defined _FORTIFY_SOURCE && defined __OPTIMIZE__ && __OPTIMIZE__
    # define _FORTIFY_SOURCE 2
    #endif
-  ])
+])
   AC_DEFINE([GNULIB_PORTCHECK], [1], [enable some gnulib portability checks])
+
+  # We use a slightly smaller set of warning options for lib/.
+  # Remove the following and save the result in GNULIB_WARN_CFLAGS.
+  nw=$ew
+  nw="$nw -Wduplicated-branches"    # Too many false alarms
+  nw="$nw -Wformat-truncation=2"
+  nw="$nw -Wunused-macros"
+
+  gl_MANYWARN_COMPLEMENT([GNULIB_WARN_CFLAGS], [$WARN_CFLAGS], [$nw])
+  AC_SUBST([GNULIB_WARN_CFLAGS])
 
   # For gnulib-tests, the set is slightly smaller still.
   nw=
+  # It's not worth being this picky about test programs.
+  nw="$nw -Wmissing-variable-declarations"
+  nw="$nw -Wsuggest-attribute=cold"
+  nw="$nw -Wsuggest-attribute=const"
+  nw="$nw -Wsuggest-attribute=format"
+  nw="$nw -Wsuggest-attribute=pure"
   gl_MANYWARN_COMPLEMENT([GNULIB_TEST_WARN_CFLAGS],
-                         [$WARN_CFLAGS], [$nw])
+                         [$GNULIB_WARN_CFLAGS], [$nw])
   AC_SUBST([GNULIB_TEST_WARN_CFLAGS])
 fi
 

@@ -801,7 +801,7 @@ match_address_p (struct sed_cmd *cmd, struct input *input)
                         - (input->line_number % cmd->a2->addr_step))))
             cmd->a2->addr_number = INTMAX_MAX;
           return true;
-        default:
+        case ADDR_IS_LAST: case ADDR_IS_NUM_MOD: case ADDR_IS_NULL:
           break;
         }
     }
