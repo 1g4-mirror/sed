@@ -1102,7 +1102,7 @@ do_subst (struct subst *sub)
 /* Translate the global input LINE via TRANS.
    This function handles the multi-byte case.  */
 static void
-translate_mb (idx_t npairs, int *pair)
+translate_mb (idx_t npairs, struct trans_pair *pair)
 {
   mcel_t g;
   for (idx_t idx = 0; idx < line.length; idx += g.len)
@@ -1113,19 +1113,11 @@ translate_mb (idx_t npairs, int *pair)
       /* 'i' indicate i-th translate pair.  */
       for (idx_t i = 0; i < npairs; i++)
         {
-          if (pair[2 * i] == ch)
+          if (pair[i].from == ch)
             {
               bool move_remain_buffer = false;
-              int tr = pair[2 * i + 1];
-              char mbuf[MCEL_LEN_MAX];
-              idx_t trans_len;
-              if (tr < 0)
-                {
-                  mbuf[0] = -tr;
-                  trans_len = 1;
-                }
-              else
-                trans_len = c32rtomb1 (mbuf, tr);
+              char *tr = pair[i].to;
+              idx_t trans_len = 1 + strnlen (tr + 1, sizeof pair[i].to - 1);
 
               if (g.len < trans_len)
                 {
@@ -1151,7 +1143,7 @@ translate_mb (idx_t npairs, int *pair)
                   line.length += move_offset;
                   idx += move_offset;
                 }
-              memcpy (line.active + prev_idx, mbuf, trans_len);
+              memcpy (line.active + prev_idx, tr, trans_len);
               break;
             }
         }

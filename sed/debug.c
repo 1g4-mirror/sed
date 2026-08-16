@@ -249,10 +249,13 @@ debug_print_translation (const struct sed_cmd *sc)
       /* multibyte translation */
       putchar ('/');
       for (idx_t i = 0; i < npairs; i++)
-        debug_print_mb (sc->x.translate.a.pair[2 * i]);
+        debug_print_mb (sc->x.translate.a.pair[i].from);
       putchar ('/');
       for (idx_t i = 0; i < npairs; i++)
-        debug_print_mb (sc->x.translate.a.pair[2 * i + 1]);
+        fwrite (sc->x.translate.a.pair[i].to, 1,
+                1 + strnlen (sc->x.translate.a.pair[i].to + 1,
+                             sizeof sc->x.translate.a.pair[i].to - 1),
+                stdout);
       putchar ('/');
     }
   else

@@ -197,11 +197,21 @@ struct sed_cmd {
            sb[(unsigned char) {I}] is the translation of I.  */
         char *sb;
 
-        /* An array used for multibyte translation.  For 0 <= I < 2 * npairs,
-           the translation of pair[I] is pair[I + 1] when I is even,
-           and a negative pair[I] stands for the encoding error byte -pair[I]
-           instead of for the usual char32_t character pair[I].  */
-        int *pair;
+        /* An array used for multibyte translation.  For 0 <= I < npairs,
+           the translation of pair[I].from is pair[I].to.  */
+        struct trans_pair
+        {
+          /* The character or encding-error byte translated from.
+             A negative value represents a negated encoding error byte
+             instead of the usual char32_t character value.  */
+          int from;
+
+          /* The multibyte representation of the translation.
+             It is always at least one byte long; after that is null
+             terminated unless it is exactly MCEL_LEN_MAX bytes.
+             A null byte is therefore represented by !to[0] && !to[1].  */
+          char to[MCEL_LEN_MAX];
+        } *pair;
       } a;
     } translate;
 

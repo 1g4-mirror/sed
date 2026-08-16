@@ -1195,9 +1195,9 @@ compile_program (struct vector *vector)
                 /* trans_pairs = {src(0), dest(0), src(1), dest(1), ... }
                      src(i) : i-th source character.
                      dest(i) : i-th destination character.  */
-                int *trans_pairs = xnmalloc (src_char_num,
-                                             2 * sizeof *trans_pairs);
-                cur_cmd->x.translate.a.pair = trans_pairs;
+                struct trans_pair *trans_pair = xnmalloc (src_char_num,
+                                                          sizeof *trans_pair);
+                cur_cmd->x.translate.a.pair = trans_pair;
                 for (idx_t i = 0; i < src_char_num; i++)
                   {
                     if (idx >= dest_len)
@@ -1205,7 +1205,7 @@ compile_program (struct vector *vector)
 
                     /* Set the i-th source character.  */
                     mcel_t s = mcel_scan (src_buf, src_buf + len);
-                    trans_pairs[2 * i] = s.err ? -s.err : s.ch;
+                    trans_pair[i].from = s.err ? -s.err : s.ch;
                     src_buf += s.len; /* Forward to next character.  */
                     len -= s.len;
 
@@ -1213,7 +1213,9 @@ compile_program (struct vector *vector)
                     mcel_t d = mcel_scan (dest_buf + idx, dest_buf + dest_len);
 
                     /* Set the i-th destination character.  */
-                    trans_pairs[2 * i + 1] = d.err ? -d.err : d.ch;
+                    memcpy (trans_pair[i].to, dest_buf + idx, d.len);
+                    if (d.len < sizeof trans_pair[i].to)
+                      trans_pair[i].to[d.len] = '\0';
                     idx += d.len; /* Forward to next character.  */
                   }
                 if (idx != dest_len)

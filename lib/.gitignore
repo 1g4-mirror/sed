@@ -249,6 +249,7 @@
 /string.in.h
 /stripslash.c
 /strncpy.c
+/strnlen.c
 /strnul.c
 /strtoimax.c
 /strtol.c

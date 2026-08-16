@@ -1,4 +1,3 @@
-/lock.m4
 /00gnulib.m4
 /__inline.m4
 /absolute-header.m4
@@ -222,6 +221,7 @@
 /strerror_r.m4
 /string_h.m4
 /strncpy.m4
+/strnlen.m4
 /strtoimax.m4
 /strtoll.m4
 /strverscmp.m4
