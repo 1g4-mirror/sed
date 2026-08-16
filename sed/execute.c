@@ -169,7 +169,7 @@ str_append_modified (struct line *to, const char *string, idx_t length,
     }
 
   idx_t worst_case_growth;
-  if (ckd_mul (&worst_case_growth, length, MB_LEN_MAX))
+  if (ckd_mul (&worst_case_growth, length, MCEL_LEN_MAX))
     xalloc_die ();
   if (to->alloc - to->length < worst_case_growth)
     resize_line (to, worst_case_growth);
@@ -841,7 +841,7 @@ do_list (intmax_t line_len)
   for (char *p = line.active; p < plim; p += g.len)
     {
       g = mcel_scan (p, plim);
-      char obuf[(sizeof "\\377" - 1) * MB_LEN_MAX];
+      char obuf[(sizeof "\\377" - 1) * MCEL_LEN_MAX];
       char *o = obuf;
       *o = '\\';
       if (c32isprint (g.ch))
@@ -1117,7 +1117,7 @@ translate_mb (idx_t npairs, int *pair)
             {
               bool move_remain_buffer = false;
               int tr = pair[2 * i + 1];
-              char mbuf[MB_LEN_MAX];
+              char mbuf[MCEL_LEN_MAX];
               idx_t trans_len;
               if (tr < 0)
                 {

@@ -235,7 +235,7 @@ debug_print_mb (int ch)
     fputc (-ch, stdout);
   else
     {
-      char buf[MB_LEN_MAX];
+      char buf[MCEL_LEN_MAX];
       fwrite (buf, 1, c32rtomb1 (buf, ch), stdout);
     }
 }
