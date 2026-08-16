@@ -1182,7 +1182,7 @@ compile_program (struct vector *vector)
 
             /* If multibyte, count the source buffer's characters.  */
             idx_t src_char_num = 0;
-            if (MB_CUR_MAX != 1)
+            if (localeinfo.multibyte)
               for (idx_t i = 0; i < len;
                    i += mcel_scan (src_buf + i, src_buf + len).len)
                 src_char_num++;
