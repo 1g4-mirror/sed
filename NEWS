@@ -30,6 +30,10 @@ GNU sed NEWS                                    -*- outline -*-
   tr_TR.iso88599 locale where capitalizing 'i' does not yield 'I'.
   [bug present since the beginning]
 
+  The documentation no longer incorrectly says that the regular
+  expression '.' cannot match an invalid multibyte sequence.
+  [bug introduced in sed 4.2]
+
 
 * Noteworthy changes in release 4.10 (2026-04-21) [stable]
 
