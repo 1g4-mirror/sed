@@ -243,15 +243,16 @@ debug_print_mb (int ch)
 static void
 debug_print_translation (const struct sed_cmd *sc)
 {
-  if (MB_CUR_MAX != 1)
+  idx_t npairs = sc->x.translate.npairs;
+  if (0 < npairs)
     {
       /* multibyte translation */
       putchar ('/');
-      for (idx_t i = 0; i < sc->x.translate.mb.npairs; i++)
-        debug_print_mb (sc->x.translate.mb.pair[2 * i]);
+      for (idx_t i = 0; i < npairs; i++)
+        debug_print_mb (sc->x.translate.a.pair[2 * i]);
       putchar ('/');
-      for (idx_t i = 0; i < sc->x.translate.mb.npairs; i++)
-        debug_print_mb (sc->x.translate.mb.pair[2 * i + 1]);
+      for (idx_t i = 0; i < npairs; i++)
+        debug_print_mb (sc->x.translate.a.pair[2 * i + 1]);
       putchar ('/');
     }
   else
@@ -259,12 +260,12 @@ debug_print_translation (const struct sed_cmd *sc)
       /* unibyte translation */
       putchar ('/');
       for (idx_t i = 0; i < UCHAR_MAX + 1; ++i)
-        if (i != (unsigned char) {sc->x.translate.sb[i]})
+        if (i != (unsigned char) {sc->x.translate.a.sb[i]})
           putchar (i);
       putchar ('/');
       for (idx_t i = 0; i < UCHAR_MAX + 1; ++i)
-        if (i != (unsigned char) {sc->x.translate.sb[i]})
-          putchar (sc->x.translate.sb[i]);
+        if (i != (unsigned char) {sc->x.translate.a.sb[i]})
+          putchar (sc->x.translate.a.sb[i]);
       putchar ('/');
     }
 }

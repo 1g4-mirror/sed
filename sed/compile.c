@@ -1180,14 +1180,16 @@ compile_program (struct vector *vector)
             dest_buf = get_buffer (b2);
             dest_len = normalize_text (dest_buf, size_buffer (b2), TEXT_BUFFER);
 
+            /* If multibyte, count the source buffer's characters.  */
+            idx_t src_char_num = 0;
             if (MB_CUR_MAX != 1)
-              {
-                /* Enumerate how many character the source buffer has.  */
-                idx_t src_char_num = 0;
-                for (idx_t i = 0; i < len;
-                     i += mcel_scan (src_buf + i, src_buf + len).len)
-                  src_char_num++;
+              for (idx_t i = 0; i < len;
+                   i += mcel_scan (src_buf + i, src_buf + len).len)
+                src_char_num++;
+            cur_cmd->x.translate.npairs = src_char_num;
 
+            if (src_char_num)
+              {
                 idx_t idx = 0;
 
                 /* trans_pairs = {src(0), dest(0), src(1), dest(1), ... }
@@ -1195,8 +1197,7 @@ compile_program (struct vector *vector)
                      dest(i) : i-th destination character.  */
                 int *trans_pairs = xnmalloc (src_char_num,
                                              2 * sizeof *trans_pairs);
-                cur_cmd->x.translate.mb.npairs = src_char_num;
-                cur_cmd->x.translate.mb.pair = trans_pairs;
+                cur_cmd->x.translate.a.pair = trans_pairs;
                 for (idx_t i = 0; i < src_char_num; i++)
                   {
                     if (idx >= dest_len)
@@ -1220,6 +1221,8 @@ compile_program (struct vector *vector)
               }
             else
               {
+                /* A single-byte locale, or a no-op empty translation y///
+                   in a multibyte locale.  */
                 char *translate = obstack_alloc (&obs, UCHAR_MAX + 1);
                 char *ustring = src_buf;
 
@@ -1234,7 +1237,7 @@ compile_program (struct vector *vector)
                 while (dest_len--)
                   translate[(unsigned char) {*ustring++}] = *dest_buf++;
 
-                cur_cmd->x.translate.sb = translate;
+                cur_cmd->x.translate.a.sb = translate;
               }
 
             read_end_of_cmd ();

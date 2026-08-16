@@ -185,21 +185,24 @@ struct sed_cmd {
     struct output *inf;
 
     /* This is used for the y command. */
-    union
+    struct
     {
-      /* An array of UCHAR_MAX + 1 bytes.  sb[(unsigned char) {I}]
-         is the translation of I.  */
-      char *sb;
+      /* If nonzero, the number of translation pairs used for multibyte
+         translation.  If zero, single-byte translation is in effect.  */
+      idx_t npairs;
 
-      /* The number of translation pairs, and an array of pairs.
-         For 0 <= I < 2 * npairs, pair[I + 1] is the translation of pair[I]
-         when I is even, and a negative pair[I] stands for the encoding
-         error byte -pair[I] instead of the usual wide character pair[I].  */
-      struct
+      union
       {
-        idx_t npairs;
+        /* An array of UCHAR_MAX + 1 bytes used for single-byte translation.
+           sb[(unsigned char) {I}] is the translation of I.  */
+        char *sb;
+
+        /* An array used for multibyte translation.  For 0 <= I < 2 * npairs,
+           the translation of pair[I] is pair[I + 1] when I is even,
+           and a negative pair[I] stands for the encoding error byte -pair[I]
+           instead of for the usual char32_t character pair[I].  */
         int *pair;
-      } mb;
+      } a;
     } translate;
 
     /* This is used for the ':' command (debug only).  */
@@ -280,7 +283,7 @@ extern bool sandbox;
 /* If set, print debugging information.  */
 extern bool debug;
 
-/* Convert to S the wide character CH.
+/* Convert to S the character CH.
    Return the number of bytes in S's representation.  */
 SED_INLINE idx_t
 c32rtomb1 (char *s, char32_t ch)

@@ -207,7 +207,7 @@ str_append_modified (struct line *to, const char *string, idx_t length,
           type &= ~(REPL_LOWERCASE_FIRST | REPL_UPPERCASE_FIRST);
           if (type == REPL_ASIS)
             {
-              /* Copy the new wide character to the end of the string. */
+              /* Copy the new character to the end of the string.  */
               to->length += c32rtomb1 (to->active + to->length, g.ch);
               str_append (to, string, stringlim - string);
               return;
@@ -218,7 +218,7 @@ str_append_modified (struct line *to, const char *string, idx_t length,
       else
         g.ch = c32tolower (g.ch);
 
-      /* Copy the new wide character to the end of the string. */
+      /* Copy the new character to the end of the string.  */
       to->length += c32rtomb1 (to->active + to->length, g.ch);
     }
 }
@@ -1497,14 +1497,14 @@ execute_program (struct vector *vec, struct input *input)
               break;
 
             case 'y':
-              if (MB_CUR_MAX != 1)
-                translate_mb (cur_cmd->x.translate.mb.npairs,
-                              cur_cmd->x.translate.mb.pair);
+              if (0 < cur_cmd->x.translate.npairs)
+                translate_mb (cur_cmd->x.translate.npairs,
+                              cur_cmd->x.translate.a.pair);
               else
                 {
                   char *e = line.active + line.length;
                   for (char *p = line.active; p < e; p++)
-                    *p = cur_cmd->x.translate.sb[(unsigned char) {*p}];
+                    *p = cur_cmd->x.translate.a.sb[(unsigned char) {*p}];
                 }
               if (debug)
                 debug_print_line (&line);
