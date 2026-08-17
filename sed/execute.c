@@ -1104,50 +1104,66 @@ do_subst (struct subst *sub)
 static void
 translate_mb (idx_t npairs, struct trans_pair *pair)
 {
-  mcel_t g;
-  for (idx_t idx = 0; idx < line.length; idx += g.len)
-    {
-      g = mcel_scan (line.active + idx, line.active + line.length);
-      int ch = g.err ? -g.err : g.ch;
+  char *from = line.active;
+  char *fromlim = line.active + line.length;
+  char *to = line.text;
 
-      /* 'i' indicate i-th translate pair.  */
+  /* Shrink any inactive area to zero size, as we are about to write it
+     and we don't want resize_line to lose what we wrote.  */
+  idx_t inactive = line.active - line.text;
+  line.active = line.text;
+  line.length += inactive;
+  line.alloc += inactive;
+
+  mcel_t g;
+  for (; from < fromlim; from += g.len)
+    {
+      g = mcel_scan (from, fromlim);
+      int ch = g.err ? -g.err : g.ch;
+      char *tr = from;
+      idx_t trlen = g.len;
+
       for (idx_t i = 0; i < npairs; i++)
         {
           if (pair[i].from == ch)
             {
-              bool move_remain_buffer = false;
-              char *tr = pair[i].to;
-              idx_t trans_len = 1 + strnlen (tr + 1, sizeof pair[i].to - 1);
+              tr = pair[i].to;
+              trlen = 1 + strnlen (tr + 1, sizeof pair[i].to - 1);
+              idx_t growth = trlen - g.len;
+              idx_t avail1 = from - to;
+              ptrdiff_t shortage = growth - avail1;
 
-              if (g.len < trans_len)
+              if (0 < shortage)
                 {
-                  idx_t len = trans_len + 1 - g.len;
-                  if (line.alloc - line.length < len)
-                    resize_line (&line, len);
-                  move_remain_buffer = true;
+                  /* The destination's tail would step on source's head.
+                     Grow the buffer if necessary, then
+                     move the source to the end of the buffer.
+                     AVAIL1 is the size of the unused area from TO to FROM;
+                     AVAIL2 is the size of the unused area from FROMLIM
+                     to DFA slop at line buffer end.  */
+                  idx_t fromlen = fromlim - from;
+                  idx_t avail2 = line.active + line.alloc - fromlim;
+                  if (avail2 < shortage)
+                    {
+                      idx_t to_offset = to - line.text;
+                      idx_t from_offset = from - line.text;
+                      resize_line (&line, shortage);
+                      to = line.text + to_offset;
+                      from = line.text + from_offset;
+                    }
+                  from = memmove (line.active + line.alloc - fromlen,
+                                  from, fromlen);
+                  fromlim = from + fromlen;
                 }
-              else if (g.len > trans_len)
-                {
-                  /* We must truncate the line buffer.  */
-                  move_remain_buffer = true;
-                }
-              idx_t prev_idx = idx;
-              if (move_remain_buffer)
-                {
-                  /* Move the remaining with \0.  */
-                  char const *move_from = (line.active + idx + g.len);
-                  char *move_to = line.active + idx + trans_len;
-                  idx_t move_len = line.length + 1 - idx - g.len;
-                  idx_t move_offset = trans_len - g.len;
-                  memmove (move_to, move_from, move_len);
-                  line.length += move_offset;
-                  idx += move_offset;
-                }
-              memcpy (line.active + prev_idx, tr, trans_len);
               break;
             }
         }
+
+      memmove (to, tr, trlen);
+      to += trlen;
     }
+
+  line.length = to - line.text;
 }
 
 static void
