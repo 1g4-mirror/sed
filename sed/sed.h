@@ -139,8 +139,8 @@ struct subst {
   unsigned print : 2;	/* 'p' option given (before/after eval) */
   unsigned eval : 1;	/* 'e' option given */
   unsigned max_id : 4;  /* maximum backreference on the RHS */
-#ifdef lint
-  char* replacement_buffer;
+#ifdef PACIFY_LSAN
+  char *replacement_buffer;
 #endif
 };
 
@@ -236,9 +236,7 @@ struct regex *compile_regex (struct buffer *b, int flags, int needed_sub);
 int match_regex (struct regex *regex,
                  char *buf, idx_t buflen, idx_t buf_start_offset,
                  struct re_registers *regarray, int regsize);
-#ifdef lint
 void release_regex (struct regex *);
-#endif
 
 void
 debug_print_command (const struct vector *program, const struct sed_cmd *sc);

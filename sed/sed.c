@@ -91,7 +91,9 @@ struct localeinfo localeinfo;
 static void
 cleanup (void)
 {
-  IF_LINT (free (in_place_extension));
+#ifdef PACIFY_LSAN
+  free (in_place_extension);
+#endif
   remove_cleanup_file ();
 }
 
@@ -280,7 +282,9 @@ main (int argc, char **argv)
 
         case 'i':
           separate_files = true;
-          IF_LINT (free (in_place_extension));
+#ifdef PACIFY_LSAN
+          free (in_place_extension);
+#endif
           if (optarg == NULL)
             /* use no backups */
             in_place_extension = xstrdup ("*");

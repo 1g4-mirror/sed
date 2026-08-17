@@ -658,7 +658,9 @@ setup_replacement (struct subst *sub, const char *text, idx_t length)
   base = xmemdup (text, length);
   length = normalize_text (base, length, TEXT_REPLACEMENT);
 
-  IF_LINT (sub->replacement_buffer = base);
+#ifdef PACIFY_LSAN
+  sub->replacement_buffer = base;
+#endif
 
   text_end = base + length;
   tail = &root;
@@ -1562,7 +1564,7 @@ finish_program (struct vector *program)
     file_read = file_write = NULL;
   }
 
-#ifdef lint
+#ifdef PACIFY_LSAN
   for (idx_t i = 0; i < program->v_length; ++i)
     {
       const struct sed_cmd *sc = &program->v[i];
@@ -1585,6 +1587,6 @@ finish_program (struct vector *program)
   obstack_free (&obs, NULL);
 #else
   (void)program;
-#endif /* lint */
+#endif
 
 }

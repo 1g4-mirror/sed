@@ -1599,7 +1599,7 @@ process_files (struct vector *the_program, char **argv)
     }
   closedown (&input);
 
-#ifdef lint
+#ifdef PACIFY_LSAN
   /* We're about to exit, so these free()s are redundant.
      But if we're running under a memory-leak detecting
      implementation of malloc(), we want to explicitly
@@ -1610,7 +1610,7 @@ process_files (struct vector *the_program, char **argv)
   free (hold.text);
   free (line.text);
   free (s_accum.text);
-#endif /* lint */
+#endif
 
   if (input.bad_count)
     status = EXIT_BAD_INPUT;

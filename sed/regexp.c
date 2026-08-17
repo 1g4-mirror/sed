@@ -347,7 +347,7 @@ match_regex (struct regex *regex, char *buf, idx_t buflen,
 }
 
 
-#ifdef lint
+#ifdef PACIFY_LSAN
 void
 release_regex (struct regex *regex)
 {
@@ -360,4 +360,4 @@ release_regex (struct regex *regex)
   regfree (&regex->pattern);
   free (regex);
 }
-#endif /* lint */
+#endif

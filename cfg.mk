@@ -369,7 +369,7 @@ static-analysis: static-analysis-init static-analysis-config \
                  static-analysis-make
 
 ASAN_FLAGS=-fsanitize=address -fno-omit-frame-pointer
-ASAN_CFLAGS=-O0 -g -Dlint $(ASAN_FLAGS)
+ASAN_CFLAGS=-O0 -g -DPACIFY_LSAN $(ASAN_FLAGS)
 ASAN_LDFLAGS=$(ASAN_FLAGS)
 
 .PHONY: build-asan

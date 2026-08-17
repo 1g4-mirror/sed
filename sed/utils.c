@@ -74,7 +74,7 @@ panic (const char *str, ...)
   va_end (ap);
   putc ('\n', stderr);
 
-#ifdef lint
+#ifdef PACIFY_LSAN
   while (open_files)
     {
       struct open_file *next = open_files->link;
