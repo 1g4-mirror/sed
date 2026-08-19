@@ -26,7 +26,7 @@ cat <<\EOF >in1 || framework_failure_
 EOF
 
 cat <<\EOF >in-non-ascii || framework_failure_
-“”‘’ …–—•°§¶™©®€£¥éüñà
+“”‘’…–—•°§¶™©®€£¥éüñà
 EOF
 
 # default: 70 characters (including the \n)
