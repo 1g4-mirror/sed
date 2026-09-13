@@ -142,10 +142,10 @@ sc_THANKS_in_duplicates:
 		  1>&2; exit 1; } || :
 
 # Ensure the contributor list stays sorted.  However, if the system's
-# en_US.utf8 locale data is erroneous, give a diagnostic and skip
+# en_US.UTF-8 locale data is erroneous, give a diagnostic and skip
 # this test.  This affects Ubuntu up to at least 22.04.
 sc_THANKS_in_sorted:
-	@printf '%s\n' J.T. Jakub | LC_ALL=en_US.utf8 sort -fc 2>/dev/null \
+	@printf '%s\n' J.T. Jakub | LC_ALL=en_US.UTF-8 sort -fc 2>/dev/null \
 	  && {								\
 	    sed '/^$$/,/^$$/!d;/^$$/d' $(srcdir)/THANKS.in > $@.1 &&	\
 	    LC_ALL=en_US.UTF-8 sort -f -k1,1 $@.1 > $@.2 &&		\
