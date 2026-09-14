@@ -291,13 +291,22 @@ extern bool sandbox;
 /* If set, print debugging information.  */
 extern bool debug;
 
-/* Convert to S the character CH.
+/* Convert to S the character CH.  S must point to at least MB_LEN_MAX bytes.
    Return the number of bytes in S's representation.  */
 SED_INLINE idx_t
 c32rtomb1 (char *s, char32_t ch)
 {
   mbstate_t mbs; mbszero (&mbs);
-  return c32rtomb (s, ch, &mbs);
+  size_t nbytes = c32rtomb (s, ch, &mbs);
+  if (nbytes == (size_t) {-1})
+    {
+      /* This can happen if the Gnulib mbrtoc32 is in use in the C locale,
+         and has converted (e.g.) '\xE8' to 0xDFE8.  Translate it back
+         by assigning, which keeps only the low 8 bits.  */
+      *s = ch;
+      nbytes = 1;
+    }
+  return nbytes;
 }
 
 /* Use this to suppress gcc's '...may be used before initialized' warnings. */
