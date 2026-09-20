@@ -22,7 +22,7 @@
 print_ver_ sed
 
 case $(uname -sr) in
-  Darwin' '?.* | Darwin' '1?.* | Darwin' '2[0-3].* | Darwin' '24.[01].* | \
+  Darwin' '?.* | Darwin' '1?.* | Darwin' '2[0-4].* | \
   DragonFly* | FreeBSD* | NetBSD* | OpenBSD*)
     skip_ "platform's mbrtowc has known Shift JIS bugs";;
 esac
